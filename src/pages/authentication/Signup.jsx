@@ -4,23 +4,30 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import emailjs from '@emailjs/browser';
 
 const Signup = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [reEnterPassword, setReEnterPassword] = useState('');
     const [isVisible, setIsVisible] = React.useState(false);
-    const toggleVisibility = () => setIsVisible(!isVisible);
+    const [isVisible1, setIsVisible1] = React.useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
+    const toggleVisibility = () => setIsVisible(!isVisible);
+    const toggleVisibility1 = () => setIsVisible1(!isVisible1);
+
     const handleLogin = () => {
-      navigate('/authenticate/login');
+      navigate('/authenticate/signin');
     };
 
-    const handleSignUp = () => {
+    const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+
+    const handleSignUp = async () => {
         // Validate fields
-        if (!email || !password || !reEnterPassword) {
+        if (!username || !password || !reEnterPassword) {
           setErrorMessage("All fields are required.");
           return;
         }
@@ -31,10 +38,60 @@ const Signup = () => {
           return;
         }
     
-        // Clear error and proceed
-        setErrorMessage("");
-        navigate("/authenticate/confirm-email"); 
+        try {
+          const response = await axios.post("http://localhost:8080/signup", {
+            username,
+            password,
+            role: "Intern"
+          });
+          console.log(response.data);
+
+          if (response.status === 200) {
+            setSuccessMessage("Registration successful. Please check your email to confirm.");
+            setTimeout(() => {
+              navigate(`/authenticate/confirm-email?email=${username}`);
+            }, 2000);
+
+            const otp = generateOTP();
+            console.log(otp);
+
+            const emailData = {
+              send_to: username,
+              message: otp,
+            };
+
+            const emailResponse = await emailjs.send(
+              import.meta.env.VITE_EMAILJS_SERVICE_ID,
+              import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID,
+              emailData,
+              import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+            );
+
+            if (emailResponse.status === 200) {
+              console.log("OTP email sent successfully:", emailResponse);
+
+              const otpStoreResponse = await axios.post("http://localhost:8080/storeOTP", {
+                email: username,
+                otp: otp
+              });
+
+              if (otpStoreResponse.status === 201) {
+                  console.log("OTP stored successfully on backend.");
+              } else {
+                  console.error("Failed to store OTP on backend:", otpStoreResponse);
+                  setErrorMessage("Failed to store OTP. Please try again.");
+              }
+            }  
+          } else {
+            console.error("Failed to send OTP email:", emailResponse);
+            setErrorMessage("Failed to send OTP. Please try again.");
+            return;
+          }
+        } catch (error) {
+          console.log("Signup failed:", error);
+        }
     };
+
 
   return (
     <div>
@@ -48,13 +105,13 @@ const Signup = () => {
             labelPlacement='outside' 
             label={
                 <span>
-                Email<span className='text-red'> *</span>
+                Username<span className='text-red'> *</span>
                 </span>
             } 
             placeholder="Enter your email" 
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
         />
         <Input 
             variant='bordered' 
@@ -93,8 +150,8 @@ const Signup = () => {
                 Re-enter Password<span className='text-red'> *</span>
                 </span>
             } 
-            placeholder="Re-enter your email" 
-            type={isVisible ? "text" : "password"}
+            placeholder="Re-enter your password" 
+            type={isVisible1 ? "text" : "password"}
             value={reEnterPassword}
             onChange={(e) => setReEnterPassword(e.target.value)}
             endContent={
@@ -102,9 +159,9 @@ const Signup = () => {
                 aria-label="toggle password visibility"
                 className="focus:outline-none"
                 type="button"
-                onClick={toggleVisibility}
+                onClick={toggleVisibility1}
                 >
-                {isVisible ? (
+                {isVisible1 ? (
                     <FaEyeSlash className="text-xl text-default-400 pointer-events-none" />
                 ) : (
                     <FaEye className="text-xl text-default-400 pointer-events-none" />
