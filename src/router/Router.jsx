@@ -1,25 +1,30 @@
 import { createBrowserRouter } from "react-router-dom"
 import Main from "../layout/Main"
+
+//Authentication
 import Authentication from "../layout/Authentication"
 import Signup from "../pages/authentication/Signup"
 import Otp from "../pages/authentication/Otp"
 import SignupSuccessful from "../pages/authentication/SignupSuccessful"
 import Signin from "../pages/authentication/Signin"
+
+//Intern
 import Intern from "../layout/Intern"
 import InternDashboard from "../pages/intern/InternDashboard"
+
+//Admin
 import Admin from "../layout/Admin"
 import AdminDashboard from "../pages/admin/AdminDashboard"
+
+//Security
+import ProtectedRoute from "../components/ProtectedRoute";
+
+
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Main/>,
-        // children: [
-        //     {
-        //         path: "/",
-        //         element: <LandingPage/>
-        //     },
-        // ]
     },
     {
         path: "/authenticate",
@@ -45,7 +50,11 @@ const router = createBrowserRouter([
     },
     {
         path: "/intern",
-        element: <Intern/>,
+        element: (
+            <ProtectedRoute requiredRole="Intern">
+                <Intern/>
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: "/intern",
@@ -55,7 +64,11 @@ const router = createBrowserRouter([
     },
     {
         path: "/admin",
-        element: <Admin/>,
+        element: (
+            <ProtectedRoute requiredRole="Admin">
+                <Admin user="admin"/>
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: "/admin",
