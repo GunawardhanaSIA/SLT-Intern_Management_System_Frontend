@@ -8,7 +8,7 @@ import { FaUserCheck } from "react-icons/fa6";
 import { FaUserXmark } from "react-icons/fa6";
 
 const NewApplications = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   const handleEyeClick = () => {
     setIsModalOpen(true); // Open the modal when the "eye" is clicked
