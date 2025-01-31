@@ -18,6 +18,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard"
 
 //Security
 import ProtectedRoute from "../components/ProtectedRoute";
+import NewApplications from "../pages/admin/NewApplications"
 
 
 
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
             {
                 path: "/admin",
                 element: <AdminDashboard/>
+            },
+            {
+                path: "/admin/new-applications",
+                element: <NewApplications/>
             },
         ]
     },
