@@ -11,6 +11,7 @@ import Signin from "../pages/authentication/Signin"
 //Intern
 import Intern from "../layout/Intern"
 import InternDashboard from "../pages/intern/InternDashboard"
+import MyProjects from "../pages/intern/MyProjects"
 
 //Admin
 import Admin from "../layout/Admin"
@@ -61,7 +62,13 @@ const router = createBrowserRouter([
                 path: "/intern",
                 element: <InternDashboard/>
             },
+            {
+                path: "/intern/my-projects",
+                element: <MyProjects/>
+            },
+
         ]
+        
     },
     {
         path: "/admin",
