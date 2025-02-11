@@ -1,7 +1,7 @@
 import React from 'react';
 import InternStatusOverview from '../../components/admin/dashboard/InternStatusOverview';
 import NewInternRegistrationOverview from '../../components/admin/dashboard/NewInternRegistrationOverview';
-import NewApplications from '../../components/admin/dashboard/NewApplications';
+import TodayInterviews from '../../components/admin/dashboard/TodayInterviews';
 
 const AdminDashboard = () => {
   return (
@@ -15,7 +15,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       <div className='my-8'>
-        <NewApplications/>
+        <TodayInterviews/>
       </div>
     </div>
   );
