@@ -1,12 +1,10 @@
 import { Input, RadioGroup, Select, SelectItem, Radio, Button, Card, CardHeader, CardBody } from "@nextui-org/react";
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { u } from "framer-motion/client";
-import { jwtDecode } from "jwt-decode";
 
 export const educationalInstitute = [
-    { key: "UOC", label: "University of Colombo" },
+    { key: "University of Colombo", label: "University of Colombo" },
     { key: "IIT", label: "IIT" },
     { key: "NIBM", label: "NIBM" },
     { key: "SLIIT", label: "SLIIT" },
@@ -22,8 +20,8 @@ export const academicYear = [
 
 export const specialization = [
     { key: "QA", label: "QA" },
-    { key: "FULLSTACK", label: "FullStack" },
-    { key: "CLOUD", label: "Cloud" },
+    { key: "Fullstack", label: "FullStack" },
+    { key: "Cloud", label: "Cloud" },
     { key: "UI/UX", label: "UI/UX" },
 ];
 
@@ -32,8 +30,8 @@ const InternDashboard = () => {
     const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState(null);
     const [resumeURL, setResumeURL] = useState("");
-    const [userID, setUserID] = useState("");
     const [selectedInstitute, setSelectedInstitute] = useState("");
+    const formRef = useRef(null)
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -71,9 +69,8 @@ const InternDashboard = () => {
         const token = localStorage.getItem("token");
         console.log(token)
 
-        const decodedToken = jwtDecode(token);
-        console.log(decodedToken.user_id);
-        setUserID(decodedToken.user_id);
+        // const decodedToken = jwtDecode(token);
+        // console.log(decodedToken.user_id);
 
         try {
             const fileData = new FormData();
@@ -92,7 +89,6 @@ const InternDashboard = () => {
 
             const finalFormData = {
                 ...formData,
-                user_id: decodedToken.user_id, 
                 resumeURL: uploadedResumeURL.url
             };
 
@@ -100,7 +96,7 @@ const InternDashboard = () => {
 
             const response = await axios.post(
               "http://localhost:8080/intern/apply", 
-              formData,
+              finalFormData,
               {
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,6 +164,7 @@ const InternDashboard = () => {
                     placeholder="Enter name"
                     type="text"
                     variant="bordered"
+                    value={formData.name}
                     onChange={(e) => handleChange("name", e.target.value)}
                 />
                 <Input
@@ -180,6 +177,7 @@ const InternDashboard = () => {
                     placeholder="Enter NIC number"
                     type="text"
                     variant="bordered"
+                    value={formData.nic}
                     onChange={(e) => handleChange("nic", e.target.value)}
                 />
                 <Input
@@ -192,6 +190,7 @@ const InternDashboard = () => {
                     placeholder="Enter mobile number"
                     variant="bordered"
                     type="tel"
+                    value={formData.mobileNumber}
                     onChange={(e) => handleChange("mobileNumber", e.target.value)}
                 />
                 <Input
@@ -204,6 +203,7 @@ const InternDashboard = () => {
                     placeholder="Enter email address"
                     type="text"
                     variant="bordered"
+                    value={formData.email}
                     onChange={(e) => handleChange("email", e.target.value)} 
                 />
                 <Input
@@ -215,6 +215,7 @@ const InternDashboard = () => {
                     labelPlacement="outside"
                     placeholder="Enter address/city"
                     variant="bordered"
+                    value={formData.address}
                     onChange={(e) => handleChange("address", e.target.value)} 
                 />
             
@@ -230,6 +231,7 @@ const InternDashboard = () => {
                         labelPlacement="outside"
                         placeholder="Select the educational institute"
                         variant="bordered"
+                        value={formData.educationalInstitute}
                         onChange={(e) => {
                             handleChange("educationalInstitute", e.target.value);
                             setSelectedInstitute(e.target.value); 
@@ -260,6 +262,7 @@ const InternDashboard = () => {
                     labelPlacement="outside"
                     placeholder="Enter degree/course"
                     variant="bordered"
+                    value={formData.degree}
                     onChange={(e) => handleChange("degree", e.target.value)}
                 />
                 
@@ -274,6 +277,7 @@ const InternDashboard = () => {
                         labelPlacement="outside"
                         placeholder="Select the current academic year"
                         variant="bordered"
+                        value={formData.academicYear}
                         onChange={(e) => handleChange("academicYear", e.target.value)}
                     >
                         {academicYear.map((item) => (
@@ -291,6 +295,7 @@ const InternDashboard = () => {
                         labelPlacement="outside"
                         placeholder="Enter internship period"
                         variant="bordered"
+                        value={formData.internshipPeriod}
                         onChange={(e) => handleChange("internshipPeriod", e.target.value)}
                     />
                 </div>
@@ -308,6 +313,7 @@ const InternDashboard = () => {
                         labelPlacement="outside"
                         placeholder="Select the field of specialization"
                         variant="bordered"
+                        value={formData.specialization}
                         onChange={(e) => handleChange("specialization", e.target.value)}
                     >
                         {specialization.map((item) => (
@@ -324,6 +330,7 @@ const InternDashboard = () => {
                         } 
                         className="w-1/2"
                         orientation="horizontal"
+                        value={formData.programmingLanguages}
                         onChange={(e) => handleChange("programmingLanguages", e.target.value)}>
                         <Radio value="Yes">Yes</Radio>
                         <Radio value="No">No</Radio>
