@@ -16,10 +16,16 @@ import MyProjects from "../pages/intern/MyProjects"
 //Admin
 import Admin from "../layout/Admin"
 import AdminDashboard from "../pages/admin/AdminDashboard"
+import UpcomingInterviews from "../pages/admin/UpcomingInterviews"
+import NewApplications from "../pages/admin/NewApplications"
 
 //Security
 import ProtectedRoute from "../components/ProtectedRoute";
-import NewApplications from "../pages/admin/NewApplications"
+
+// Supervisor
+import Supervisor from "../layout/Supervisor"
+import SupervisorDashboard from "../pages/supervisor/SupervisorDashboard"
+import SupervisorProjects from "../pages/supervisor/SupervisorProjects"
 
 
 
@@ -85,6 +91,28 @@ const router = createBrowserRouter([
             {
                 path: "/admin/new-applications",
                 element: <NewApplications/>
+            },
+            {
+                path: "/admin/upcoming-interviews",
+                element: <UpcomingInterviews/>
+            },
+        ]
+    },
+    {
+        path: "/supervisor",
+        element: (
+            <ProtectedRoute requiredRole="Supervisor">
+                <Supervisor user="supervisor"/>
+            </ProtectedRoute>
+        ),
+        children: [
+            {
+                path: "/supervisor",
+                element: <SupervisorDashboard/>
+            },
+            {
+                path: "/supervisor/projects",
+                element: <SupervisorProjects/>
             },
         ]
     },

@@ -15,9 +15,9 @@ const Admin = () => {
   const sidebarItems = [
     { path: '/admin', title: 'Dashboard', icon: <MdDashboard /> },
     { path: '/admin/new-applications', title: 'New Applications', icon: <MdPersonAddAlt1 />, alert: true },
+    { path: '/admin/upcoming-interviews', title: 'Upcoming Interviews', icon: <FaCalendarCheck /> },
     { path: '/admin/manage-interns', title: 'Manage Interns', icon: <HiUserGroup /> },
     { path: '/admin/manage-supervisors', title: 'Manage Supervisors', icon: <FaUserTie /> },
-    { path: '/admin/attendance', title: 'Attendance', icon: <FaCalendarCheck /> },
     { path: '/admin/reports', title: 'Reports', icon: <IoDocuments /> },
   ];
 
