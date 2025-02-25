@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import { getToken } from '../../../pages/authentication/Auth';
 import "../../../Table.css";
-import {Button, Select, SelectItem, Input, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, RadioGroup, Radio, Textarea} from "@nextui-org/react";
+import {Button, Select, SelectItem, Input, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, RadioGroup, Radio, Textarea, user} from "@nextui-org/react";
 import { IoSearch } from "react-icons/io5";
 import { FaRegEye } from "react-icons/fa6";
 import { FaUserCheck } from "react-icons/fa6";
@@ -12,6 +12,9 @@ const TodayInterviews = () => {
   const [applicants, setApplicants] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [supervisors, setSupervisors] = useState([]); // List of supervisors
+  const [isSupervisorModalOpen, setIsSupervisorModalOpen] = useState(false);
+  const [selectedSupervisor, setSelectedSupervisor] = useState(null);
 
     useEffect(() => {
       const token = getToken();
@@ -28,11 +31,71 @@ const TodayInterviews = () => {
         .then(response => {
           const filteredApplicants = response.data.filter(applicant => applicant.interviewDate === new Date().toISOString().split('T')[0]);
           setApplicants(filteredApplicants);
+          console.log(filteredApplicants)
         })
         .catch(error => {
           console.error("Error fetching applicants:", error);
         });
+
+
+        // Fetch the list of supervisors
+        axios
+        .get("http://localhost:8080/admin/supervisors", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setSupervisors(response.data);
+          console.log(supervisors)
+        })
+        .catch((error) => {
+          console.error("Error fetching supervisors:", error);
+        });
     }, []);
+
+
+    const handleSaveIntern = (applicant, selectedSupervisor) => {
+      const token = getToken(); // Get authentication token
+    
+      const requestData = {
+        name: applicant.name,
+        nic: applicant.nic,
+        mobileNumber: applicant.mobileNumber,
+        email: applicant.email,
+        address: applicant.address,
+        educationalInstitute: applicant.educationalInstitute,
+        degree: applicant.degree,
+        academicYear: applicant.academicYear,
+        internshipPeriod: applicant.internshipPeriod,
+        specialization: applicant.specialization,
+        programmingLanguages: applicant.programmingLanguages,
+        resumeURL: applicant.resumeURL,
+        startDate: new Date().toISOString().split('T')[0]
+      };
+    
+      console.log("Request Payload:", requestData);
+      console.log("Selected Supervisor ID:", selectedSupervisor);
+
+      try {
+        const postResponse = fetch(`http://localhost:8080/admin/createIntern?userId=${applicant.user.id}&applicantId=${applicant.applicantId}&supervisorId=${selectedSupervisor}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestData),
+        });
+    
+        console.log("Intern saved successfully!");
+        setApplicants(prevApplicants => prevApplicants.filter(a => a.applicantId !== applicant.applicantId));
+        setIsSupervisorModalOpen(false);
+      } catch (error) {
+        console.error("Error saving intern:", error);
+        alert("Error saving intern. Please try again.");
+      }
+    };
 
     const handleEyeClick = (applicant) => {
         setSelectedApplicant(applicant);
@@ -42,6 +105,11 @@ const TodayInterviews = () => {
     const handleCloseModal = () => {
     setIsModalOpen(false); // Close the modal
     setSelectedApplicant(null);
+    };
+
+    const handleSupervisorModal = (applicant) => {
+      setSelectedApplicant(applicant);
+      setIsSupervisorModalOpen(true);
     };
 
 
@@ -88,7 +156,7 @@ const TodayInterviews = () => {
                       <span 
                         className="text-lg text-success cursor-pointer active:opacity-50"
                       >
-                        <FaUserCheck onClick={() => handleInterview(applicant)} />
+                        <FaUserCheck onClick={() => handleSupervisorModal(applicant)} />
                       </span>
                     </Tooltip>
                     <Tooltip color="danger" content="Reject Applicant">
@@ -156,8 +224,39 @@ const TodayInterviews = () => {
           </ModalFooter>
           </ModalContent>
       </Modal>
+
+      {/* Supervisor Selection Modal */}
+      <Modal isOpen={isSupervisorModalOpen} onClose={() => setIsSupervisorModalOpen(false)} size="md">
+        <ModalContent>
+          <ModalHeader>Select Supervisor for {selectedApplicant?.name}</ModalHeader>
+          <ModalBody>
+            <Select
+            className='my-8'
+              label="Select Supervisor"
+              variant='bordered'
+              placeholder="Choose a supervisor"
+              value={selectedSupervisor}
+              onChange={(e) => setSelectedSupervisor(e.target.value)}
+            >
+              {supervisors.map((supervisor) => (
+                <SelectItem key={supervisor.supervisorId} value={supervisor.supervisorId}>
+                  {supervisor.name}
+                </SelectItem>
+              ))}
+            </Select>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="bordered" color="danger" onPress={() => setIsSupervisorModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button className='bg-green font-bold text-white' onPress={() => handleSaveIntern(selectedApplicant, selectedSupervisor)}>
+              Save Intern
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
-};
+}
 
 export default TodayInterviews

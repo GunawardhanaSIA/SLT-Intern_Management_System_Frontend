@@ -25,6 +25,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Supervisor from "../layout/Supervisor"
 import SupervisorDashboard from "../pages/supervisor/SupervisorDashboard"
 import SupervisorProjects from "../pages/supervisor/SupervisorProjects"
+import MyInterns from "../pages/supervisor/MyInterns"
 
 
 
@@ -106,6 +107,10 @@ const router = createBrowserRouter([
             {
                 path: "/supervisor/projects",
                 element: <SupervisorProjects/>
+            },
+            {
+                path: "/supervisor/my-interns",
+                element: <MyInterns/>
             },
         ]
     },
