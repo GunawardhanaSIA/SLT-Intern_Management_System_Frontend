@@ -16,6 +16,7 @@ const Intern = () => {
     { path: '/intern/my-projects', title: 'My Projects', icon: <FaLaptopCode />, alert: true },
     { path: '/admin/apply-for-certificate', title: 'Apply for Certificate', icon: <GrCertificate /> },
     { path: '/admin/attendance', title: 'Attendance', icon: <FaRegCalendarCheck /> },
+    { path: '/intern/daily-updates', title: 'Daily updates', icon: <FaRegCalendarCheck /> },
   ];
 
   const handleSidebarItemClick = (title) => {

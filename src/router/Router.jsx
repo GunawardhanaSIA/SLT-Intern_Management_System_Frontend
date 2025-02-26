@@ -18,6 +18,7 @@ import Admin from "../layout/Admin"
 import AdminDashboard from "../pages/admin/AdminDashboard"
 import UpcomingInterviews from "../pages/admin/UpcomingInterviews"
 import NewApplications from "../pages/admin/NewApplications"
+import DailyUpdates from "../pages/intern/DailyUpdates"
 
 //Security
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
             {
                 path: "/intern/my-projects",
                 element: <MyProjects/>
+            },
+            {
+                path: "/intern/daily-updates",
+                element: <DailyUpdates/>
             },
 
         ]
