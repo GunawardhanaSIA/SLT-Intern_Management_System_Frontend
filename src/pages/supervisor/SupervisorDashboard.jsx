@@ -35,6 +35,10 @@ const SupervisorDashboard = () => {
   const [projects, setProjects] = useState([]);
   const [selectedDate, setSelectedDate] = useState(today(getLocalTimeZone())); // Default: today's date
   const [attendance, setAttendance] = useState({}); // Stores attendance in { date: { memberId: true/false } }
+  const [attendanceData, setAttendanceData] = useState({});
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [columns, setColumns] = useState([]);
+  const [rows, setRows] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [targetDate, setTargetDate] = useState(null);
   const [member1, setMember1] = useState(null);
@@ -150,6 +154,70 @@ const SupervisorDashboard = () => {
           const filteredProjects = response.data.filter(project => project.supervisor.supervisorId === supervisorId);
           setProjects(filteredProjects.sort((a, b) => b.projectId - a.projectId));
           console.log(supervisorId, filteredProjects);
+
+          filteredProjects.forEach(project => {
+            axios.get(`http://localhost:8080/supervisor/attendance/${project.projectId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            })
+            .then(attendanceResponse => {
+              console.log("Raw attendance data: ", attendanceResponse.data);
+
+              // Transform data into { date: { internId: status } }
+              const structuredAttendance = {};
+
+              attendanceResponse.data.forEach(record => {
+                  const { date, intern, status } = record;
+
+                  if (!structuredAttendance[date]) {
+                      structuredAttendance[date] = {};
+                  }
+                  structuredAttendance[date][intern.internId] = status;
+              });
+
+              console.log("Transformed attendance data: ", structuredAttendance);
+
+              setAttendanceData(prev => ({
+                  ...prev,
+                  [project.projectId]: structuredAttendance  // Store transformed data
+              }));
+
+              console.log("Type of structuredAttendance:", typeof structuredAttendance);
+              console.log("Is structuredAttendance an Object?", structuredAttendance instanceof Object);
+              console.log("Raw Object.keys(structuredAttendance):", Object.keys(structuredAttendance));
+
+              const allDates = Object.keys(structuredAttendance).sort(); 
+
+
+              // Set columns per project
+              setColumns(prevColumns => ({
+                ...prevColumns,
+                [project.projectId]: [
+                    { key: "name", label: "Member Name" },
+                    ...allDates.map(date => ({ key: date, label: date })) // Dynamically set date columns
+                ]
+            }));
+
+            console.log(columns)
+
+              // Set rows per project
+              setRows(prevRows => ({
+                  ...prevRows,
+                  [project.projectId]: project.interns.map(intern => {
+                      let rowData = { id: intern.internId, name: intern.name };
+                      allDates.forEach(date => {
+                          rowData[date] = structuredAttendance[date]?.[intern.internId] ? "✅" : "❌";
+                      });
+                      return rowData;
+                  })
+              }));
+            })
+            .catch(error => {
+                console.error(`Error fetching attendance for project ${project.projectId}:`, error);
+            });
+        });
         })
         .catch(error => {
           console.error("Error fetching projects:", error);
@@ -164,6 +232,10 @@ const SupervisorDashboard = () => {
       [field]: value,
     }));
   };
+
+
+  
+
 
 
 
@@ -210,6 +282,70 @@ const SupervisorDashboard = () => {
         alert("Failed to create project.");
     });
   };
+
+
+  const handleSaveAttendance = async () => {
+    const token = getToken();
+    const formattedDate = selectedDate.toString(); 
+
+    try {
+        await Promise.all(selectedInterns.map(async (intern) => {
+            const attendanceEntry = {
+                intern: intern.internId,
+                projectId: selectedProject.projectId,
+                date: formattedDate,
+                status: attendance[formattedDate]?.[intern.internId] || false
+            };
+
+            console.log("Sending attendance data:", attendanceEntry);
+
+            const response = await fetch(`http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to save attendance");
+            }
+
+            console.log("Attendance saved for intern:", intern);
+        }));
+
+        // ✅ **1. Update attendanceData immediately**
+        setAttendanceData(prevData => {
+            const updatedData = { ...prevData };
+            
+            if (!updatedData[selectedProject.projectId]) {
+                updatedData[selectedProject.projectId] = {};
+            }
+
+            if (!updatedData[selectedProject.projectId][formattedDate]) {
+                updatedData[selectedProject.projectId][formattedDate] = {};
+            }
+
+            selectedInterns.forEach(intern => {
+                updatedData[selectedProject.projectId][formattedDate][intern.internId] = attendance[formattedDate]?.[intern.internId] || false;
+            });
+
+            return updatedData;
+        });
+
+        setIsAttendanceModalOpen(false); // Close modal after saving
+
+        // ✅ **2. Wait for state update before fetching**
+        setTimeout(() => {
+            fetchUpdatedAttendance(selectedProject.projectId);
+        }, 500); // Small delay ensures state updates before fetching
+
+    } catch (error) {
+        console.error("Error saving attendance:", error);
+    }
+};
+
+
 
   const handleOpenModal = () => {
     setIsModalOpen(true); 
@@ -325,26 +461,20 @@ const SupervisorDashboard = () => {
                           </div>
                       </div>
                       
-                      <Table>
-                          <TableHeader>
-                              <TableColumn>Member Name</TableColumn>
-                              {allDates.map(date => (
-                                  <TableColumn key={date}>{date}</TableColumn>
-                              ))}
-                          </TableHeader>
-                          <TableBody>
-                              {project.interns.map(intern => (
-                                  <TableRow key={intern.internId}>
-                                      <TableCell>{intern.name}</TableCell>
-                                      {allDates.map(date => (
-                                          <TableCell key={`${date}-${intern.internId}`}>
-                                              {attendance[date]?.[intern.internId] ? "✅" : "❌"}
-                                          </TableCell>
-                                      ))}
-                                  </TableRow>
-                              ))}
-                          </TableBody>
-                      </Table>
+                      <Table aria-label={`Attendance Table for ${project.projectName}`}>
+                    <TableHeader columns={columns[project.projectId] || []}>
+                        {column => <TableColumn key={column.key}>{column.label}</TableColumn>}
+                    </TableHeader>
+                    <TableBody items={rows[project.projectId] || []}>
+                        {row => (
+                            <TableRow key={row.id}>
+                                {columnKey => <TableCell>{row[columnKey]}</TableCell>}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+
+
                   </div>
               </div>
           </CardBody>
@@ -390,7 +520,7 @@ const SupervisorDashboard = () => {
                           <Button color="danger" variant="light" onClick={() => setIsModalOpen(false)}>
                               Cancel
                           </Button>
-                          <Button color="primary" onClick={() => setIsAttendanceModalOpen(false)}>
+                          <Button color="primary" onClick={handleSaveAttendance}>
                               Save Attendance
                           </Button>
                       </ModalFooter>
