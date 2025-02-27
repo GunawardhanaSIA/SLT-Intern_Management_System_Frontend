@@ -116,31 +116,7 @@ const SupervisorDashboard = () => {
         .catch(error => {
           console.error("Error fetching interns:", error);
         });
-
-
-      // axios.get("http://localhost:8080/supervisor/myProjects",
-      //   {
-      //     headers: {
-      //         'Content-Type': 'application/json',
-      //         'Authorization': `Bearer ${token}`
-      //     }
-      //   }
-      // ) 
-      //   .then(response => {
-      //     const filteredProjects = response.data.filter(project => project.supervisor.supervisorId === supervisorId);
-      //     setProjects(filteredProjects);
-      //     console.log(projects)
-      //   })
-      //   .catch(error => {
-      //     console.error("Error fetching projects:", error);
-      //   });
   }, []);
-
-  // useEffect(() => {
-  //   if (supervisorId) {
-  //       console.log(supervisorId);  // This will log whenever supervisorId is updated
-  //   }
-  // }, [supervisorId]); 
 
   useEffect(() => {
     if (supervisorId) {
@@ -223,7 +199,7 @@ const SupervisorDashboard = () => {
           console.error("Error fetching projects:", error);
         });
       }
-    }, [supervisorId]);
+    }, [supervisorId, attendanceData]);
 
 
   const handleChange = (field, value) => {
@@ -232,12 +208,6 @@ const SupervisorDashboard = () => {
       [field]: value,
     }));
   };
-
-
-  
-
-
-
 
   const handleCreateProject = () => {
     const token = getToken();
@@ -275,6 +245,7 @@ const SupervisorDashboard = () => {
     .then(response => {
       console.log(response.data)
         alert("Project created successfully!");
+        setProjects(prevProjects => [response.data, ...prevProjects]); 
         setIsModalOpen(false);  // Close modal on success
     })
     .catch(error => {
@@ -284,66 +255,127 @@ const SupervisorDashboard = () => {
   };
 
 
-  const handleSaveAttendance = async () => {
-    const token = getToken();
-    const formattedDate = selectedDate.toString(); 
+//   const handleSaveAttendance = async () => {
+//     const token = getToken();
+//     const formattedDate = selectedDate.toString(); 
 
-    try {
-        await Promise.all(selectedInterns.map(async (intern) => {
-            const attendanceEntry = {
-                intern: intern.internId,
-                projectId: selectedProject.projectId,
-                date: formattedDate,
-                status: attendance[formattedDate]?.[intern.internId] || false
-            };
+//     try {
+//         await Promise.all(selectedInterns.map(async (intern) => {
+//             const attendanceEntry = {
+//                 intern: intern.internId,
+//                 projectId: selectedProject.projectId,
+//                 date: formattedDate,
+//                 status: attendance[formattedDate]?.[intern.internId] || false
+//             };
 
-            console.log("Sending attendance data:", attendanceEntry);
+//             console.log("Sending attendance data:", attendanceEntry);
 
-            const response = await fetch(`http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
+//             const response = await fetch(`http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, {
+//                 method: "POST",
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                     "Authorization": `Bearer ${token}`,
+//                 },
+//             });
 
-            if (!response.ok) {
-                throw new Error("Failed to save attendance");
-            }
+//             if (!response.ok) {
+//                 throw new Error("Failed to save attendance");
+//             }
 
-            console.log("Attendance saved for intern:", intern);
-        }));
+//             console.log("Attendance saved for intern:", intern);
+//         }));
 
-        // ✅ **1. Update attendanceData immediately**
-        setAttendanceData(prevData => {
-            const updatedData = { ...prevData };
+//         // ✅ **1. Update attendanceData immediately**
+//         setAttendanceData(prevData => {
+//             const updatedData = { ...prevData };
             
-            if (!updatedData[selectedProject.projectId]) {
-                updatedData[selectedProject.projectId] = {};
-            }
+//             if (!updatedData[selectedProject.projectId]) {
+//                 updatedData[selectedProject.projectId] = {};
+//             }
 
-            if (!updatedData[selectedProject.projectId][formattedDate]) {
-                updatedData[selectedProject.projectId][formattedDate] = {};
-            }
+//             if (!updatedData[selectedProject.projectId][formattedDate]) {
+//                 updatedData[selectedProject.projectId][formattedDate] = {};
+//             }
 
-            selectedInterns.forEach(intern => {
-                updatedData[selectedProject.projectId][formattedDate][intern.internId] = attendance[formattedDate]?.[intern.internId] || false;
-            });
+//             selectedInterns.forEach(intern => {
+//                 updatedData[selectedProject.projectId][formattedDate][intern.internId] = attendance[formattedDate]?.[intern.internId] || false;
+//             });
 
-            return updatedData;
-        });
+//             return updatedData;
+//         });
 
-        setIsAttendanceModalOpen(false); // Close modal after saving
+//         setIsAttendanceModalOpen(false); // Close modal after saving
 
-        // ✅ **2. Wait for state update before fetching**
-        setTimeout(() => {
-            fetchUpdatedAttendance(selectedProject.projectId);
-        }, 500); // Small delay ensures state updates before fetching
+//         // ✅ **2. Wait for state update before fetching**
+//         setTimeout(() => {
+//             fetchUpdatedAttendance(selectedProject.projectId);
+//         }, 500); // Small delay ensures state updates before fetching
 
-    } catch (error) {
-        console.error("Error saving attendance:", error);
-    }
+//     } catch (error) {
+//         console.error("Error saving attendance:", error);
+//     }
+// };
+
+const handleSaveAttendance = async () => {
+  const token = getToken();
+  const formattedDate = selectedDate.toString();
+
+  try {
+      const updatedAttendanceData = { ...attendanceData };
+
+      await Promise.all(selectedInterns.map(async (intern) => {
+          const attendanceEntry = {
+              intern: intern.internId,
+              projectId: selectedProject.projectId,
+              date: formattedDate,
+              status: attendance[formattedDate]?.[intern.internId] || false
+          };
+
+          console.log("Sending attendance data:", attendanceEntry);
+
+          const response = await fetch(
+              `http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, 
+              {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${token}`,
+                  },
+              }
+          );
+
+          if (!response.ok) {
+              throw new Error("Failed to save attendance");
+          }
+
+          console.log("Attendance saved for intern:", intern);
+
+          // ✅ **Update `updatedAttendanceData` before fetching**
+          if (!updatedAttendanceData[selectedProject.projectId]) {
+              updatedAttendanceData[selectedProject.projectId] = {};
+          }
+
+          if (!updatedAttendanceData[selectedProject.projectId][formattedDate]) {
+              updatedAttendanceData[selectedProject.projectId][formattedDate] = {};
+          }
+
+          updatedAttendanceData[selectedProject.projectId][formattedDate][intern.internId] = attendanceEntry.status;
+      }));
+
+      // ✅ **1. Update state immediately**
+      setAttendanceData(updatedAttendanceData);
+
+      // ✅ **2. Close modal after updating state**
+      setIsAttendanceModalOpen(false);
+
+      // ✅ **3. Trigger a re-fetch**
+      fetchUpdatedAttendance(selectedProject.projectId);
+
+  } catch (error) {
+      console.error("Error saving attendance:", error);
+  }
 };
+
 
 
 
