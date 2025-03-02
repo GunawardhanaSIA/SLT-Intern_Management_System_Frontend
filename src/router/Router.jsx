@@ -28,6 +28,9 @@ import Supervisor from "../layout/Supervisor"
 import SupervisorDashboard from "../pages/supervisor/SupervisorDashboard"
 import SupervisorProjects from "../pages/supervisor/SupervisorProjects"
 import MyInterns from "../pages/supervisor/MyInterns"
+import ForgotPassword from "../pages/authentication/ForgotPassword"
+import ResetPassword from "../pages/authentication/ResetPassword"
+import ResetPasswordSuccessfull from "../pages/authentication/ResetPasswordSuccessfull"
 
 
 
@@ -56,6 +59,18 @@ const router = createBrowserRouter([
                 path: "/authenticate/signup-successful",
                 element: <SignupSuccessful/>
             },
+            {
+                path: "/authenticate/reset-password-step1",
+                element: <ForgotPassword/>
+            },
+            {
+                path: "/authenticate/reset-password-step2",
+                element: <ResetPassword/>
+            },
+            {
+                path: "/authenticate/reset-password-successful",
+                element: <ResetPasswordSuccessfull/>
+            }
         ]
     },
     {
