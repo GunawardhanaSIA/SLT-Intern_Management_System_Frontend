@@ -32,6 +32,10 @@ const Signin = () => {
     navigate('/authenticate/signup');
   };
 
+  const handleForgotPassword = () => {
+    navigate('/authenticate/reset-password-step1');
+  };
+
   const handleSignin = async (e) => {
     if (!username) {
       setErrorMessage("Email is required.");
@@ -47,7 +51,7 @@ const Signin = () => {
         username: username,
         password: password
       });
-      console.log(response.data);
+      console.log("sign-in response data: ", response.data);
 
       const token = response.data.jwt;
 
@@ -57,6 +61,12 @@ const Signin = () => {
       console.log(role);
 
       const user_id = decodedToken.user_id;
+      const state = decodedToken.user_state; // Get state from decoded token
+
+      if (state === 1) {
+        setErrorMessage("You have not completed signup process successfully");
+        return; // Stop execution here
+      }
 
       // Save the token with expiration time (3 days)
       const expirationTime = new Date();
@@ -139,12 +149,12 @@ const Signin = () => {
         />
       </div>
   
-      <div className='flex mt-6 justify-between'>
-        <Checkbox size="sm"><span className='text-gray'>Remember me</span></Checkbox>
-        <p className='text-xs font-light cursor-pointer'>Forgot Password?</p>
+      <div className='flex mt-6 justify-end'>
+        {/* <Checkbox size="sm"><span className='text-gray' isSelected={rememberMe} onValueChange={setRememberMe}>Remember me</span></Checkbox> */}
+        <p className='text-xs font-light cursor-pointer' onClick={handleForgotPassword}>Forgot Password?</p>
       </div>
 
-      {errorMessage && <p className="text-red font-light text-xs mt-4">{errorMessage}</p>}
+      {errorMessage && <p className="flex text-red font-light text-xs mt-4 justify-center">{errorMessage}</p>}
 
       <div className='mt-6'>
         <Button className='w-full bg-blue font-bold text-white' onPress={handleSignin}>Sign in</Button>

@@ -44,7 +44,7 @@ const Signup = () => {
             password,
             role: "Intern"
           });
-          console.log(response.data);
+          console.log("jwt token: ", response.data);
 
           if (response.status === 200) {
             setSuccessMessage("Registration successful. Please check your email to confirm.");
@@ -175,7 +175,7 @@ const Signup = () => {
 
       <div className='mt-4'>
         <Button className='w-full bg-blue font-bold text-white' onPress={handleSignUp}>Sign up</Button>
-        <p className='flex gap-2 justify-center mt-2 text-sm text-gray'>Already have an account? <span className='text-blue font-semibold'><a className='cursor-pointer' onClick={handleLogin}>Log in</a></span></p>
+        <p className='flex gap-2 justify-center mt-2 text-sm text-gray'>Already have an account? <span className='text-blue font-semibold'><a className='cursor-pointer' onClick={handleLogin}>Sign in</a></span></p>
       </div>
     </div>
   )
