@@ -15,6 +15,8 @@ const Supervisor = () => {
   const sidebarItems = [
     { path: '/supervisor', title: 'Projects', icon: <FaLaptopCode /> },
     { path: '/supervisor/my-interns', title: 'My Interns', icon: <HiUserGroup /> },
+    { path: '/supervisor/daily-records', title: 'Daily Records', icon: <HiUserGroup /> },
+    
   ];
 
   const handleSidebarItemClick = (title) => {

@@ -11,26 +11,15 @@ import Signin from "../pages/authentication/Signin"
 //Intern
 import Intern from "../layout/Intern"
 import InternDashboard from "../pages/intern/InternDashboard"
-import MyProjects from "../pages/intern/MyProjects"
+import DailyRecords from "../pages/intern/DailyRecords";
 
 //Admin
 import Admin from "../layout/Admin"
 import AdminDashboard from "../pages/admin/AdminDashboard"
-import UpcomingInterviews from "../pages/admin/UpcomingInterviews"
-import NewApplications from "../pages/admin/NewApplications"
-import DailyUpdates from "../pages/intern/DailyUpdates"
 
 //Security
 import ProtectedRoute from "../components/ProtectedRoute";
-
-// Supervisor
-import Supervisor from "../layout/Supervisor"
-import SupervisorDashboard from "../pages/supervisor/SupervisorDashboard"
-import SupervisorProjects from "../pages/supervisor/SupervisorProjects"
-import MyInterns from "../pages/supervisor/MyInterns"
-import ForgotPassword from "../pages/authentication/ForgotPassword"
-import ResetPassword from "../pages/authentication/ResetPassword"
-import ResetPasswordSuccessfull from "../pages/authentication/ResetPasswordSuccessfull"
+import NewApplications from "../pages/admin/NewApplications"
 
 
 
@@ -59,18 +48,6 @@ const router = createBrowserRouter([
                 path: "/authenticate/signup-successful",
                 element: <SignupSuccessful/>
             },
-            {
-                path: "/authenticate/reset-password-step1",
-                element: <ForgotPassword/>
-            },
-            {
-                path: "/authenticate/reset-password-step2",
-                element: <ResetPassword/>
-            },
-            {
-                path: "/authenticate/reset-password-successful",
-                element: <ResetPasswordSuccessfull/>
-            }
         ]
     },
     {
@@ -86,16 +63,10 @@ const router = createBrowserRouter([
                 element: <InternDashboard/>
             },
             {
-                path: "/intern/my-projects",
-                element: <MyProjects/>
-            },
-            {
-                path: "/intern/daily-updates",
-                element: <DailyUpdates/>
-            },
-
+                path: "/intern/daily-records",
+                element: <DailyRecords />,
+              }
         ]
-        
     },
     {
         path: "/admin",
@@ -112,32 +83,6 @@ const router = createBrowserRouter([
             {
                 path: "/admin/new-applications",
                 element: <NewApplications/>
-            },
-            {
-                path: "/admin/upcoming-interviews",
-                element: <UpcomingInterviews/>
-            },
-        ]
-    },
-    {
-        path: "/supervisor",
-        element: (
-            <ProtectedRoute requiredRole="Supervisor">
-                <Supervisor user="supervisor"/>
-            </ProtectedRoute>
-        ),
-        children: [
-            {
-                path: "/supervisor",
-                element: <SupervisorDashboard/>
-            },
-            {
-                path: "/supervisor/projects",
-                element: <SupervisorProjects/>
-            },
-            {
-                path: "/supervisor/my-interns",
-                element: <MyInterns/>
             },
         ]
     },
