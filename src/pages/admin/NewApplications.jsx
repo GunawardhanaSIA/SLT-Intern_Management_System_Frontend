@@ -32,6 +32,7 @@ const NewApplications = () => {
         }
       ) 
         .then(response => {
+          console.log(response.data)
           const filteredApplicants = response.data.filter(applicant => applicant.state === 0);
           setApplicants(filteredApplicants);
         })

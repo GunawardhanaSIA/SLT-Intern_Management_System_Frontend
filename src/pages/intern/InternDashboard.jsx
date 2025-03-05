@@ -2,6 +2,7 @@ import { Input, RadioGroup, Select, SelectItem, Radio, Button, Card, CardHeader,
 import React, {useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { supabase } from "../../SupabaseClient";
 
 export const educationalInstitute = [
     { key: "University of Colombo", label: "University of Colombo" },
@@ -9,6 +10,14 @@ export const educationalInstitute = [
     { key: "NIBM", label: "NIBM" },
     { key: "SLIIT", label: "SLIIT" },
     { key: "other", label: "Other" },
+];
+
+export const programmingLang = [
+    { key: "Java", label: "Java" },
+    { key: "Python", label: "Python" },
+    { key: "PHP", label: "PHP" },
+    { key: "C#", label: "C#" },
+    { key: "MERN", label: "MERN" },
 ];
 
 export const academicYear = [
@@ -29,14 +38,56 @@ export const specialization = [
 const InternDashboard = () => {
     const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [resumeURL, setResumeURL] = useState("");
     const [selectedInstitute, setSelectedInstitute] = useState("");
     const formRef = useRef(null)
 
-    const handleFileChange = async (event) => {
+    // const handleFileChange = async (event) => {
+    //     const file = event.target.files[0];
+    //     console.log(file);
+    //     setSelectedFile(file); 
+    // };
+
+    const handleFileChange = (event) => {
         const file = event.target.files[0];
-        console.log(file);
-        setSelectedFile(file); 
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
+
+    const uploadResumeToSupabase = async () => {
+        if (!selectedFile) {
+            alert("Please select a file to upload!");
+            return;
+        }
+
+        setUploading(true);
+        // const filePath = `resumes/${Date.now()}_${selectedFile.name}`;
+
+        const fileExt = selectedFile.name.split(".").pop(); // Get the file extension
+        const randomName = Math.random().toString(36).substring(2, 10); // Generate a random string
+        const fileName = `${randomName}.${fileExt}`; // Append the file extension
+        const filePath = `${fileName}`; // Set the file path
+
+        let { data, error } = await supabase.storage
+            .from("resumes")
+            .upload(filePath, selectedFile);
+
+        if (error) {
+            console.error("Upload error:", error.message);
+            alert("Resume upload failed!");
+            setUploading(false);
+            return null;
+        }
+
+        const { data: url } = await supabase.storage
+            .from("resumes")
+            .getPublicUrl(filePath);
+
+        setResumeURL(url.publicUrl);
+        setUploading(false);
+        return url.publicUrl;
     };
 
     const [formData, setFormData] = useState({
@@ -73,23 +124,27 @@ const InternDashboard = () => {
         // console.log(decodedToken.user_id);
 
         try {
-            const fileData = new FormData();
-            fileData.append("file", selectedFile);
-            fileData.append("upload_preset", "SLTMobitel");
-            fileData.append("cloud_name", "dljhk5ajd");
-            fileData.append("resource_type", "raw"); 
+            // const fileData = new FormData();
+            // fileData.append("file", selectedFile);
+            // fileData.append("upload_preset", "SLTMobitel");
+            // fileData.append("cloud_name", "dljhk5ajd");
+            // fileData.append("resource_type", "raw"); 
       
-            const cloudinaryResp = await fetch("https://api.cloudinary.com/v1_1/dljhk5ajd/raw/upload", {
-                method: "POST",
-                body: fileData
-            })
+            // const cloudinaryResp = await fetch("https://api.cloudinary.com/v1_1/dljhk5ajd/raw/upload", {
+            //     method: "POST",
+            //     body: fileData
+            // })
 
-            const uploadedResumeURL = await cloudinaryResp.json();
-            console.log("Uploaded Resume URL:", uploadedResumeURL.url);
+            // const uploadedResumeURL = await cloudinaryResp.json();
+            // console.log("Uploaded Resume URL:", uploadedResumeURL.url);
+
+            const uploadedResumeURL = await uploadResumeToSupabase();
+            if (!uploadedResumeURL) return;
+            console.log("resume url: ", uploadedResumeURL)
 
             const finalFormData = {
                 ...formData,
-                resumeURL: uploadedResumeURL.url
+                resumeURL: uploadedResumeURL
             };
 
             console.log("Final Form Data:", finalFormData);
@@ -322,19 +377,27 @@ const InternDashboard = () => {
                         </SelectItem>
                         ))}
                     </Select>
-                    <RadioGroup 
-                        label={
-                            <span className="text-black text-sm">
-                                11. Familiar with Programming Languages?<span className="text-red"> *</span>
-                            </span>
-                        } 
+                    <Select
                         className="w-1/2"
-                        orientation="horizontal"
+                        disableSelectorIconRotation
+                        selectionMode="multiple"
+                        label={
+                        <span>
+                            10. Programming Languages<span className="text-red"> *</span>
+                        </span>
+                        }
+                        labelPlacement="outside"
+                        placeholder="Select the languages you are familiar with"
+                        variant="bordered"
                         value={formData.programmingLanguages}
-                        onChange={(e) => handleChange("programmingLanguages", e.target.value)}>
-                        <Radio value="Yes">Yes</Radio>
-                        <Radio value="No">No</Radio>
-                    </RadioGroup>
+                        onChange={(e) => handleChange("programmingLanguages", e.target.value)}
+                    >
+                        {programmingLang.map((item) => (
+                        <SelectItem key={item.key} value={item.key}>
+                            {item.label}
+                        </SelectItem>
+                        ))}
+                    </Select>
                 </div>
 
             {/* resume upload */}
@@ -343,25 +406,31 @@ const InternDashboard = () => {
                         <span className="flex items-center">
                             12. Upload Resume<span className="text-red ml-1">*</span>
                         </span>
-                        <input
+                        {/* <input
                         id="file-upload"
                         type="file"
                         className="hidden"
-                        />
+                        /> */}
                     </label>
 
                     <div className="flex gap-2 items-center">
                         <input type="file" class="file-input w-full file-input-sm file-input-blue max-w-xs" onChange={handleFileChange} />
 
-                        {selectedFile && (
+                        {/* {selectedFile && (
                             <p className="text-sm text-gray-500">
+                            </p>
+                        )} */}
+                        {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+                        {resumeURL && (
+                            <p className="text-sm text-gray-500">
+                                Resume Uploaded: <a href={resumeURL} target="_blank" className="text-blue-500">View</a>
                             </p>
                         )}
                     </div>  
                 </div>
 
             <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4 mt-8">
-              <Button className="font-bold text-white bg-green w-1/2" onPress={handleSubmit}>
+              <Button className="font-bold text-white bg-green w-1/2" onPress={handleSubmit} disabled={uploading}>
                 Submit Application
               </Button>
               <Button color="default" variant="bordered" className="text-gray-400 font-bold w-1/2" onPress={handleCancel}>
