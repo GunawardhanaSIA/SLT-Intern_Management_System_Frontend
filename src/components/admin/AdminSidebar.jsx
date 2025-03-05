@@ -2,11 +2,24 @@ import React, { createContext, useContext, useState } from 'react'
 import { LuMenu } from "react-icons/lu";
 import { FaUserAlt } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
+import UserContext from "../../utils/UserContext"
+import { useNavigate } from 'react-router-dom';
+import { getToken } from '../../pages/authentication/Auth';
+import {jwtDecode} from 'jwt-decode';
 
 const SidebarContext = createContext()
 
 export default function AdminSidebar({children}) {
     const [expanded, setExpanded] = useState(true)
+    const { logout } = useContext(UserContext); 
+    const navigate = useNavigate();
+
+    const token = getToken();
+    console.log("Inside Supervisor Sidebar: ",token);
+
+    const decodedToken = jwtDecode(token);
+    const email = decodedToken.sub; 
+    console.log(email)
 
   return (
     <aside className='h-screen'>
@@ -32,9 +45,12 @@ export default function AdminSidebar({children}) {
                 <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3": "w-0"}`}>
                     <div className='leading-4'>
                         <h4 className='font-semibold text-zinc-600'>Admin</h4>
-                        <span className='text-xs text-zinc-600'>admin@gmail.com</span>
+                        <span className='text-xs text-zinc-600'>{email}</span>
                     </div>
-                    <FiLogOut className='text-2xl text-zinc-600'/>
+                    {/* Logout Icon with Click Handler */}
+                    <button onClick={() => logout(navigate)}>
+                        <FiLogOut className='text-2xl text-zinc-600 cursor-pointer'/>
+                    </button>
                 </div>
             </div>
         </nav>

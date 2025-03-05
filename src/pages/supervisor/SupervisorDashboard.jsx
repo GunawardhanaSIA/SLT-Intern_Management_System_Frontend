@@ -127,6 +127,7 @@ const SupervisorDashboard = () => {
         }
         })
         .then(response => {
+          console.log(response.data)
           const filteredProjects = response.data.filter(project => project.supervisor.supervisorId === supervisorId);
           setProjects(filteredProjects.sort((a, b) => b.projectId - a.projectId));
           console.log(supervisorId, filteredProjects);
