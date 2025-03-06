@@ -6,7 +6,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   
     const handleApply = () => {
-        navigate('/apply');
+        navigate('/authenticate/signin');
     };
 
   return (
