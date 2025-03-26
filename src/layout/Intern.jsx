@@ -25,10 +25,11 @@ const Intern = () => {
     try {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub; 
+      const userID = decodedToken.user_id      ; 
 
-      console.log("Decoded Username:", email);
+      console.log("Decoded Username:", decodedToken);
 
-      axios.get(`http://localhost:8080/intern/getIntern/${email}`, {
+      axios.get(`http://localhost:8080/intern/getIntern/${userID}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`

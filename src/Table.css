@@ -13,14 +13,15 @@
     text-align: left;
 }
 
-.table_component th {
+.table_component th, .attendance_table th {
     border: 1px solid #dededf;
     background-color: #f2f2f2;
     /* color: #000000; */
     padding: 10px;
+    text-align: left;
 }
 
-.table_component td {
+.table_component td, .attendance_table td {
     border: 1px solid #dededf;
     background-color: #ffffff;
     color: #000000;

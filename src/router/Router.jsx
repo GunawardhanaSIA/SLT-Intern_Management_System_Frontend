@@ -31,6 +31,7 @@ import MyInterns from "../pages/supervisor/MyInterns"
 import ForgotPassword from "../pages/authentication/ForgotPassword"
 import ResetPassword from "../pages/authentication/ResetPassword"
 import ResetPasswordSuccessfull from "../pages/authentication/ResetPasswordSuccessfull"
+import Attendance from "../pages/supervisor/Attendance"
 
 
 
@@ -138,6 +139,10 @@ const router = createBrowserRouter([
             {
                 path: "/supervisor/my-interns",
                 element: <MyInterns/>
+            },
+            {
+                path: "/supervisor/attendance",
+                element: <Attendance/>
             },
         ]
     },

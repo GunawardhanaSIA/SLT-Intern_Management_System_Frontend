@@ -5,6 +5,7 @@ import { FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import emailjs from '@emailjs/browser';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Signup = () => {
     const [username, setUsername] = useState('');
@@ -174,7 +175,20 @@ const Signup = () => {
       {errorMessage && <p className="text-red font-light text-xs mt-4">{errorMessage}</p>}
 
       <div className='mt-4'>
-        <Button className='w-full bg-blue font-bold text-white' onPress={handleSignUp}>Sign up</Button>
+        <Button className='w-full bg-blue font-bold text-white mb-2' onPress={handleSignUp}>Sign up</Button>
+        <div className='w-full flex justify-center'>
+          <GoogleLogin 
+            onSuccess={credentialResponse => {
+              console.log(credentialResponse);
+            }}
+            onError={() => {
+              console.log('Login Failed');
+            }}
+            size="large" 
+            width="385" 
+            text="continue_with"
+          />
+        </div>
         <p className='flex gap-2 justify-center mt-2 text-sm text-gray'>Already have an account? <span className='text-blue font-semibold'><a className='cursor-pointer' onClick={handleLogin}>Sign in</a></span></p>
       </div>
     </div>
