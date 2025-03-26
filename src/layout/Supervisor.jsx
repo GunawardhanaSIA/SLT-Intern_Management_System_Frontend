@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { FaLaptopCode } from "react-icons/fa6";
 import { HiUserGroup } from "react-icons/hi2";
-import { GrCertificate } from "react-icons/gr";
 import { FaRegCalendarCheck } from "react-icons/fa";
-import { FiFilePlus } from "react-icons/fi";
 import SupervisorSidebar, {SupervisorSidebarItem} from '../components/supervisor/SupervisorSidebar';
 import SupervisorNavbar from '../components/supervisor/SupervisorNavbar';
 
@@ -14,6 +12,7 @@ const Supervisor = () => {
 
   const sidebarItems = [
     { path: '/supervisor', title: 'Projects', icon: <FaLaptopCode /> },
+    { path: '/supervisor/attendance', title: 'Attendance', icon: <FaRegCalendarCheck /> },
     { path: '/supervisor/my-interns', title: 'My Interns', icon: <HiUserGroup /> },
   ];
 
