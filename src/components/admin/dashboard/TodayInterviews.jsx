@@ -89,6 +89,7 @@ const TodayInterviews = () => {
         });
     
         console.log("Intern saved successfully!");
+        console.log("Intern saved successfully!");
         setApplicants(prevApplicants => prevApplicants.filter(a => a.applicantId !== applicant.applicantId));
         setIsSupervisorModalOpen(false);
       } catch (error) {
@@ -210,7 +211,12 @@ const TodayInterviews = () => {
                   </div>
                   <div className='flex flex-col gap-2 pb-4 mt-16'>
                   <h1 className='font-semibold'>Resume</h1>
-                  <a href={selectedApplicant.resumeURL} target="_blank" rel="noopener noreferrer" className='text-sm text-blue'>Click Here</a>
+                  <a 
+                      href="/Resumes/1745134385361-SandaniGunawardhana_SLT.pdf" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className='text-sm text-blue'
+                  >Click Here</a>
                   </div>
               </div>
               ) : (

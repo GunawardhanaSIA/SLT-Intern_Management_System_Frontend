@@ -4,20 +4,22 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
-function decodeJWT(token) {
-  const base64Url = token.split(".")[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split("")
-      .map(function (c) {
-        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-      })
-      .join("")
-  );
-  return JSON.parse(jsonPayload);
-}
+// function decodeJWT(token) {
+//   const base64Url = token.split(".")[1];
+//   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+//   const jsonPayload = decodeURIComponent(
+//     atob(base64)
+//       .split("")
+//       .map(function (c) {
+//         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+//       })
+//       .join("")
+//   );
+//   return JSON.parse(jsonPayload);
+// }
 
 const Signin = () => {
   const [username, setUsername] = useState('');
@@ -26,68 +28,110 @@ const Signin = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const toggleVisibility = () => setIsVisible(!isVisible);
+  // const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleSignup = () => {
     navigate('/authenticate/signup');
   };
 
-  const handleForgotPassword = () => {
-    navigate('/authenticate/reset-password-step1');
-  };
+  // const handleForgotPassword = () => {
+  //   navigate('/authenticate/reset-password-step1');
+  // };
 
-  const handleSignin = async (e) => {
-    if (!username) {
-      setErrorMessage("Email is required.");
-      return;
-    }
-    if (!password) {
-      setErrorMessage("Password is required.");
-      return;
-    }
+  const handleGoogleSignInSuccess = async (token) => {
+    console.log("Google JWT:", token, "Type:", typeof token);
+    const decodedToken = jwtDecode(token);
+    console.log("Decoded token: ", decodedToken)
+    const username = decodedToken.email
+    console.log("Decoded email: ", username)
 
     try {
       const response = await axios.post("http://localhost:8080/login", {
-        username: username,
-        password: password
+        username,
       });
-      console.log("sign-in response data: ", response.data);
+      if (response.status === 200) {
+        console.log("sign-in response data: ", response.data);
+        const responseToken = response.data.jwt
+        const decodedResponseToken = jwtDecode(responseToken);
+        console.log("Decoded response token: ", decodedResponseToken)
+        const role = decodedResponseToken.role
+        const user_id = decodedResponseToken.user_id;
+        console.log("Signed in user's Role: ", role)
+        console.log("Signed in user's user ID: ", user_id)
 
-      const token = response.data.jwt;
+        // Save the token with expiration time (3 days)
+        const expirationTime = new Date();
+        expirationTime.setDate(expirationTime.getDate() + 3); // 3 days from now
+        localStorage.setItem("token", responseToken);
+        localStorage.setItem("tokenExpiration", expirationTime.getTime());
 
-      const decodedToken = decodeJWT(token);
-      console.log(decodedToken);
-      const role = decodedToken.role;
-      console.log(role);
-
-      const user_id = decodedToken.user_id;
-      const state = decodedToken.user_state; // Get state from decoded token
-
-      if (state === 1) {
-        setErrorMessage("You have not completed signup process successfully");
-        return; // Stop execution here
-      }
-
-      // Save the token with expiration time (3 days)
-      const expirationTime = new Date();
-      expirationTime.setDate(expirationTime.getDate() + 3); // 3 days from now
-      localStorage.setItem("token", token);
-      localStorage.setItem("tokenExpiration", expirationTime.getTime());
-
-      if (role === "Intern") {
-        navigate("/intern/");
-      } else if (role === "Admin") {
-        navigate("/admin/");
-      } else if (role === "Supervisor") {
-        navigate("/supervisor/");
+        if (role === "Intern") {
+          navigate("/intern");
+        } else if (role === "Admin") {
+          navigate("/admin/");
+        } else if (role === "Supervisor") {
+          navigate("/supervisor/");
+        }
       }
     } catch (error) {
-      const message =
-        error.response?.data?.message || "Incorrect email or password";
+      const message = error.response?.data?.message || "Failed to sign in";
       setErrorMessage(message);
       console.error("Signin failed:", error);
     }
-  }
+  };
+
+  // const handleSignin = async (e) => {
+  //   if (!username) {
+  //     setErrorMessage("Email is required.");
+  //     return;
+  //   }
+  //   if (!password) {
+  //     setErrorMessage("Password is required.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.post("http://localhost:8080/login", {
+  //       username: username,
+  //       password: password
+  //     });
+  //     console.log("sign-in response data: ", response.data);
+
+  //     const token = response.data.jwt;
+
+  //     const decodedToken = decodeJWT(token);
+  //     console.log(decodedToken);
+  //     const role = decodedToken.role;
+  //     console.log(role);
+
+  //     const user_id = decodedToken.user_id;
+  //     const state = decodedToken.user_state; // Get state from decoded token
+
+  //     if (state === 1) {
+  //       setErrorMessage("You have not completed signup process successfully");
+  //       return; // Stop execution here
+  //     }
+
+  //     // Save the token with expiration time (3 days)
+  //     const expirationTime = new Date();
+  //     expirationTime.setDate(expirationTime.getDate() + 3); // 3 days from now
+  //     localStorage.setItem("token", token);
+  //     localStorage.setItem("tokenExpiration", expirationTime.getTime());
+
+  //     if (role === "Intern") {
+  //       navigate("/intern/");
+  //     } else if (role === "Admin") {
+  //       navigate("/admin/");
+  //     } else if (role === "Supervisor") {
+  //       navigate("/supervisor/");
+  //     }
+  //   } catch (error) {
+  //     const message =
+  //       error.response?.data?.message || "Incorrect email or password";
+  //     setErrorMessage(message);
+  //     console.error("Signin failed:", error);
+  //   }
+  // }
 
   useEffect(() => {
     const tokenExpiration = localStorage.getItem("tokenExpiration");
@@ -102,10 +146,10 @@ const Signin = () => {
 
   return (
     <div>
-      <h1 className='text-3xl font-bold flex justify-center'>Sign-in to Your Account</h1>
+      <h1 className='text-4xl flex justify-center'>Let's sign-in</h1>
       
-      <div className='mt-12 mb-4 flex flex-col gap-6'>
-        <Input 
+      <div className='mt-6 mb-4 flex  justify-center items-center'>
+        {/* <Input 
             variant='bordered' 
             size='md' 
             labelPlacement='outside' 
@@ -118,8 +162,8 @@ const Signin = () => {
             type="email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-        />
-        <Input 
+        /> */}
+        {/* <Input 
             variant='bordered' 
             size='md' 
             labelPlacement='outside' 
@@ -146,21 +190,35 @@ const Signin = () => {
                 )}
                 </button>
             }
-        />
+        /> */}
       </div>
   
-      <div className='flex mt-6 justify-end'>
+      {/* <div className='flex mt-6 justify-end'> */}
         {/* <Checkbox size="sm"><span className='text-gray' isSelected={rememberMe} onValueChange={setRememberMe}>Remember me</span></Checkbox> */}
-        <p className='text-xs font-light cursor-pointer' onClick={handleForgotPassword}>Forgot Password?</p>
-      </div>
+        {/* <p className='text-xs font-light cursor-pointer' onClick={handleForgotPassword}>Forgot Password?</p> */}
+      {/* </div> */}
 
-      {errorMessage && <p className="flex text-red font-light text-xs mt-4 justify-center">{errorMessage}</p>}
+      {/* {errorMessage && <p className="flex text-red font-light text-xs mt-4 justify-center">{errorMessage}</p>} */}
 
-      <div className='mt-6'>
-        <Button className='w-full bg-blue font-bold text-white' onPress={handleSignin}>Sign in</Button>
+      {/* <div className='mt-6'> */}
+        {/* <Button className='w-full bg-blue font-bold text-white mb-2' onPress={handleSignin}>Sign in</Button> */}
+        <div className='w-full flex justify-center'>
+                  <GoogleLogin 
+                    onSuccess={credentialResponse => {
+                      handleGoogleSignInSuccess(credentialResponse.credential);
+                    }}
+                    onError={() => {
+                      console.log('Sign in Failed');
+                      setErrorMessage('Sign in Failed');
+                    }}
+                    size="large" 
+                    width="300" 
+                    text="continue_with"
+                  />
+                </div>
         <p className='flex gap-2 justify-center mt-2 text-sm text-gray'>Don't have an account? <span className='text-blue font-semibold'><a className='cursor-pointer' onClick={handleSignup}>Sign up</a></span></p>
       </div>
-    </div>
+    // </div>
   )
 }
 

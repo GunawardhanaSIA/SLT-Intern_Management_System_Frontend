@@ -15,7 +15,7 @@ export default function InternSidebar({children}) {
     const navigate = useNavigate();
 
     const token = getToken();
-    console.log("Inside Supervisor Sidebar: ",token);
+    console.log("Inside Intern Sidebar: ",token);
 
     const decodedToken = jwtDecode(token);
     const email = decodedToken.sub; 

@@ -6,23 +6,13 @@ import { jwtDecode } from 'jwt-decode';
 import { getToken } from '../authentication/Auth';
 import axios from 'axios';
 import {parseDate, today, getLocalTimeZone } from "@internationalized/date";
-import { use } from 'react';
 
 export const technology = [
   { key: "Java", label: "Java" },
   { key: "PHP", label: "PHP" },
   { key: "Python", label: "Python" },
   { key: "C#", label: "C#" },
-  { key: "MERN", label: "MERN" },
-  { key: "All", label: "All" },
-];
-
-const members = [
-  { id: 1, name: "Nethmi Athukorala" },
-  { id: 2, name: "Nishika Emalshi" },
-  { id: 3, name: "Sandani Gunawardhana" },
-  { id: 4, name: "Avishka Perera" },
-  { id: 5, name: "Dasun Thathsara" },
+  { key: "MERN", label: "MERN" }
 ];
 
 const SupervisorDashboard = () => {
@@ -71,25 +61,25 @@ const SupervisorDashboard = () => {
   const formatDate = (date) => date.toString();
 
   // Handle attendance selection
-  const handleAttendanceChange = (memberId) => {
-      const dateKey = formatDate(selectedDate);
+  // const handleAttendanceChange = (memberId) => {
+  //     const dateKey = formatDate(selectedDate);
 
-      setAttendance((prev) => ({
-          ...prev,
-          [dateKey]: {
-              ...prev[dateKey],
-              [memberId]: !prev[dateKey]?.[memberId], // Toggle presence
-          }
-      }));
-  };
+  //     setAttendance((prev) => ({
+  //         ...prev,
+  //         [dateKey]: {
+  //             ...prev[dateKey],
+  //             [memberId]: !prev[dateKey]?.[memberId], // Toggle presence
+  //         }
+  //     }));
+  // };
 
-  const handleSubmit = () => {
-      console.log("Attendance Data:", attendance);
-      alert("Attendance marked successfully!");
-  };
+  // const handleSubmit = () => {
+  //     console.log("Attendance Data:", attendance);
+  //     alert("Attendance marked successfully!");
+  // };
 
   // Get all unique dates for columns
-  const allDates = Object.keys(attendance).sort(); // Sorted for consistency
+  // const allDates = Object.keys(attendance).sort(); // Sorted for consistency
 
 
   useEffect(() => {
@@ -132,69 +122,69 @@ const SupervisorDashboard = () => {
           setProjects(filteredProjects.sort((a, b) => b.projectId - a.projectId));
           console.log(supervisorId, filteredProjects);
 
-          filteredProjects.forEach(project => {
-            axios.get(`http://localhost:8080/supervisor/attendance/${project.projectId}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                }
-            })
-            .then(attendanceResponse => {
-              console.log("Raw attendance data: ", attendanceResponse.data);
+          // filteredProjects.forEach(project => {
+          //   axios.get(`http://localhost:8080/supervisor/attendance/${project.projectId}`, {
+          //       headers: {
+          //           'Content-Type': 'application/json',
+          //           'Authorization': `Bearer ${getToken()}`
+          //       }
+          //   })
+          //   .then(attendanceResponse => {
+          //     console.log("Raw attendance data: ", attendanceResponse.data);
 
-              // Transform data into { date: { internId: status } }
-              const structuredAttendance = {};
+          //     // Transform data into { date: { internId: status } }
+          //     const structuredAttendance = {};
 
-              attendanceResponse.data.forEach(record => {
-                  const { date, intern, status } = record;
+          //     attendanceResponse.data.forEach(record => {
+          //         const { date, intern, status } = record;
 
-                  if (!structuredAttendance[date]) {
-                      structuredAttendance[date] = {};
-                  }
-                  structuredAttendance[date][intern.internId] = status;
-              });
+          //         if (!structuredAttendance[date]) {
+          //             structuredAttendance[date] = {};
+          //         }
+          //         structuredAttendance[date][intern.internId] = status;
+          //     });
 
-              console.log("Transformed attendance data: ", structuredAttendance);
+          //     console.log("Transformed attendance data: ", structuredAttendance);
 
-              setAttendanceData(prev => ({
-                  ...prev,
-                  [project.projectId]: structuredAttendance  // Store transformed data
-              }));
+          //     setAttendanceData(prev => ({
+          //         ...prev,
+          //         [project.projectId]: structuredAttendance  // Store transformed data
+          //     }));
 
-              console.log("Type of structuredAttendance:", typeof structuredAttendance);
-              console.log("Is structuredAttendance an Object?", structuredAttendance instanceof Object);
-              console.log("Raw Object.keys(structuredAttendance):", Object.keys(structuredAttendance));
+          //     console.log("Type of structuredAttendance:", typeof structuredAttendance);
+          //     console.log("Is structuredAttendance an Object?", structuredAttendance instanceof Object);
+          //     console.log("Raw Object.keys(structuredAttendance):", Object.keys(structuredAttendance));
 
-              const allDates = Object.keys(structuredAttendance).sort(); 
+          //     const allDates = Object.keys(structuredAttendance).sort(); 
 
 
               // Set columns per project
-              setColumns(prevColumns => ({
-                ...prevColumns,
-                [project.projectId]: [
-                    { key: "name", label: "Member Name" },
-                    ...allDates.map(date => ({ key: date, label: date })) // Dynamically set date columns
-                ]
-            }));
+        //       setColumns(prevColumns => ({
+        //         ...prevColumns,
+        //         [project.projectId]: [
+        //             { key: "name", label: "Member Name" },
+        //             ...allDates.map(date => ({ key: date, label: date })) // Dynamically set date columns
+        //         ]
+        //     }));
 
-            console.log(columns)
+        //     console.log(columns)
 
-              // Set rows per project
-              setRows(prevRows => ({
-                  ...prevRows,
-                  [project.projectId]: project.interns.map(intern => {
-                      let rowData = { id: intern.internId, name: intern.name };
-                      allDates.forEach(date => {
-                          rowData[date] = structuredAttendance[date]?.[intern.internId] ? "✅" : "❌";
-                      });
-                      return rowData;
-                  })
-              }));
-            })
-            .catch(error => {
-                console.error(`Error fetching attendance for project ${project.projectId}:`, error);
-            });
-        });
+        //       // Set rows per project
+        //       setRows(prevRows => ({
+        //           ...prevRows,
+        //           [project.projectId]: project.interns.map(intern => {
+        //               let rowData = { id: intern.internId, name: intern.name };
+        //               allDates.forEach(date => {
+        //                   rowData[date] = structuredAttendance[date]?.[intern.internId] ? "✅" : "❌";
+        //               });
+        //               return rowData;
+        //           })
+        //       }));
+        //     })
+        //     .catch(error => {
+        //         console.error(`Error fetching attendance for project ${project.projectId}:`, error);
+        //     });
+        // });
         })
         .catch(error => {
           console.error("Error fetching projects:", error);
@@ -216,14 +206,18 @@ const SupervisorDashboard = () => {
     const formattedStartDate = startDate.toString();
     const formatTargettDate = targetDate.toString();
 
-    const projectInterns = [
-      { internId: member1 },
-      { internId: member2 },
-      { internId: member3 },
-      { internId: member4 }
-    ];
+    // const projectInterns = [
+    //   { internId: member1 },
+    //   { internId: member2 },
+    //   { internId: member3 },
+    //   { internId: member4 }
+    // ];
 
-    console.log(projectInterns)
+    // console.log(projectInterns)
+
+    const projectInterns = [member1, member2, member3, member4]
+      .filter(Boolean)  // Remove any empty (null/undefined) selections
+      .map(id => ({ internId: id }));  // Map to { internId: id }
 
     const projectData = {
       groupName: formData.groupName,
@@ -255,129 +249,65 @@ const SupervisorDashboard = () => {
     });
   };
 
+// const handleSaveAttendance = async () => {
+//   const token = getToken();
+//   const formattedDate = selectedDate.toString();
 
-//   const handleSaveAttendance = async () => {
-//     const token = getToken();
-//     const formattedDate = selectedDate.toString(); 
+//   try {
+//       const updatedAttendanceData = { ...attendanceData };
 
-//     try {
-//         await Promise.all(selectedInterns.map(async (intern) => {
-//             const attendanceEntry = {
-//                 intern: intern.internId,
-//                 projectId: selectedProject.projectId,
-//                 date: formattedDate,
-//                 status: attendance[formattedDate]?.[intern.internId] || false
-//             };
+//       await Promise.all(selectedInterns.map(async (intern) => {
+//           const attendanceEntry = {
+//               intern: intern.internId,
+//               projectId: selectedProject.projectId,
+//               date: formattedDate,
+//               status: attendance[formattedDate]?.[intern.internId] || false
+//           };
 
-//             console.log("Sending attendance data:", attendanceEntry);
+//           console.log("Sending attendance data:", attendanceEntry);
 
-//             const response = await fetch(`http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, {
-//                 method: "POST",
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                     "Authorization": `Bearer ${token}`,
-//                 },
-//             });
+//           const response = await fetch(
+//               `http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, 
+//               {
+//                   method: "POST",
+//                   headers: {
+//                       "Content-Type": "application/json",
+//                       "Authorization": `Bearer ${token}`,
+//                   },
+//               }
+//           );
 
-//             if (!response.ok) {
-//                 throw new Error("Failed to save attendance");
-//             }
+//           if (!response.ok) {
+//               throw new Error("Failed to save attendance");
+//           }
 
-//             console.log("Attendance saved for intern:", intern);
-//         }));
+//           console.log("Attendance saved for intern:", intern);
 
-//         // ✅ **1. Update attendanceData immediately**
-//         setAttendanceData(prevData => {
-//             const updatedData = { ...prevData };
-            
-//             if (!updatedData[selectedProject.projectId]) {
-//                 updatedData[selectedProject.projectId] = {};
-//             }
+//           // ✅ **Update `updatedAttendanceData` before fetching**
+//           if (!updatedAttendanceData[selectedProject.projectId]) {
+//               updatedAttendanceData[selectedProject.projectId] = {};
+//           }
 
-//             if (!updatedData[selectedProject.projectId][formattedDate]) {
-//                 updatedData[selectedProject.projectId][formattedDate] = {};
-//             }
+//           if (!updatedAttendanceData[selectedProject.projectId][formattedDate]) {
+//               updatedAttendanceData[selectedProject.projectId][formattedDate] = {};
+//           }
 
-//             selectedInterns.forEach(intern => {
-//                 updatedData[selectedProject.projectId][formattedDate][intern.internId] = attendance[formattedDate]?.[intern.internId] || false;
-//             });
+//           updatedAttendanceData[selectedProject.projectId][formattedDate][intern.internId] = attendanceEntry.status;
+//       }));
 
-//             return updatedData;
-//         });
+//       // ✅ **1. Update state immediately**
+//       setAttendanceData(updatedAttendanceData);
 
-//         setIsAttendanceModalOpen(false); // Close modal after saving
+//       // ✅ **2. Close modal after updating state**
+//       setIsAttendanceModalOpen(false);
 
-//         // ✅ **2. Wait for state update before fetching**
-//         setTimeout(() => {
-//             fetchUpdatedAttendance(selectedProject.projectId);
-//         }, 500); // Small delay ensures state updates before fetching
+//       // ✅ **3. Trigger a re-fetch**
+//       fetchUpdatedAttendance(selectedProject.projectId);
 
-//     } catch (error) {
-//         console.error("Error saving attendance:", error);
-//     }
+//   } catch (error) {
+//       console.error("Error saving attendance:", error);
+//   }
 // };
-
-const handleSaveAttendance = async () => {
-  const token = getToken();
-  const formattedDate = selectedDate.toString();
-
-  try {
-      const updatedAttendanceData = { ...attendanceData };
-
-      await Promise.all(selectedInterns.map(async (intern) => {
-          const attendanceEntry = {
-              intern: intern.internId,
-              projectId: selectedProject.projectId,
-              date: formattedDate,
-              status: attendance[formattedDate]?.[intern.internId] || false
-          };
-
-          console.log("Sending attendance data:", attendanceEntry);
-
-          const response = await fetch(
-              `http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, 
-              {
-                  method: "POST",
-                  headers: {
-                      "Content-Type": "application/json",
-                      "Authorization": `Bearer ${token}`,
-                  },
-              }
-          );
-
-          if (!response.ok) {
-              throw new Error("Failed to save attendance");
-          }
-
-          console.log("Attendance saved for intern:", intern);
-
-          // ✅ **Update `updatedAttendanceData` before fetching**
-          if (!updatedAttendanceData[selectedProject.projectId]) {
-              updatedAttendanceData[selectedProject.projectId] = {};
-          }
-
-          if (!updatedAttendanceData[selectedProject.projectId][formattedDate]) {
-              updatedAttendanceData[selectedProject.projectId][formattedDate] = {};
-          }
-
-          updatedAttendanceData[selectedProject.projectId][formattedDate][intern.internId] = attendanceEntry.status;
-      }));
-
-      // ✅ **1. Update state immediately**
-      setAttendanceData(updatedAttendanceData);
-
-      // ✅ **2. Close modal after updating state**
-      setIsAttendanceModalOpen(false);
-
-      // ✅ **3. Trigger a re-fetch**
-      fetchUpdatedAttendance(selectedProject.projectId);
-
-  } catch (error) {
-      console.error("Error saving attendance:", error);
-  }
-};
-
-
 
 
   const handleOpenModal = () => {
@@ -414,32 +344,33 @@ const handleSaveAttendance = async () => {
 
       <div className='flex flex-col justify-center items-center mt-12 mx-40 gap-8'>
         {projects.map((project, index) => (
-        <Card className='p-4 w-full'>
-          <CardHeader>
+        <Card className='p-4 mb-5 w-full'>
+          <CardHeader className='flex justify-between'>
               <h1 className='font-bold text-lg text-blue'>{project.groupName} - {project.projectName}</h1>
+              {/* <Button variant='bordered' className='font-bold text-green bg-none border-green'>Edit Project</Button> */}
           </CardHeader>
           <CardBody>
               <div className="w-full space-y-6 mt-4">
                   <div className="flex flex-wrap md:flex-nowrap gap-6">
                       <Input 
-                          isDisabled
+                          // isDisabled
                           size='md' 
                           variant='bordered' 
                           label="Group Name" 
                           labelPlacement='outside' 
                           type="text" 
-                          placeholder={project.groupName}
+                          defaultValue={project.groupName}
                           className="w-full md:w-1/2"
                       />
 
                       <Input 
                           size='md' 
-                          isDisabled
+                          // isDisabled
                           variant='bordered' 
                           label="Project Name" 
                           labelPlacement='outside' 
                           type="text" 
-                          placeholder={project.projectName}
+                          defaultValue={project.projectName}
                           className="w-full md:w-1/2"
                       />
                   </div>
@@ -447,11 +378,11 @@ const handleSaveAttendance = async () => {
                   <div>
                       <Textarea  
                           variant='bordered' 
-                          isDisabled
+                          // isDisabled
                           label="Description" 
                           labelPlacement='outside' 
                           type="text" 
-                          placeholder={project.description}
+                          defaultValue={project.description}
                           className="w-full"
                       />
                   </div>
@@ -459,29 +390,73 @@ const handleSaveAttendance = async () => {
                   <div className="flex flex-wrap md:flex-nowrap gap-6">
                       <Input 
                           variant='bordered' 
-                          isDisabled
+                          // isDisabled
                           label="Start Date" 
                           labelPlacement='outside' 
-                          placeholder={project.startDate}
+                          defaultValue={project.startDate}
                           className="w-full md:w-1/2"
                       />
 
                       <Input 
                           variant='bordered' 
-                          isDisabled
+                          // isDisabled
                           label="Target Date" 
                           labelPlacement='outside' 
-                          placeholder={project.targetDate}
+                          defaultValue={project.targetDate}
                           className="w-full md:w-1/2"
                       />
                   </div>
 
+                  <div className="flex flex-wrap md:flex-nowrap gap-6">
+                      <Input 
+                          variant='bordered' 
+                          // isDisabled
+                          label="Member 1" 
+                          labelPlacement='outside' 
+                          defaultValue={project.interns[0]?.name || "N/A"}
+                          className="w-full md:w-1/2"
+                      />
+
+                      <Input 
+                          variant='bordered' 
+                          // isDisabled
+                          label="Member 2" 
+                          labelPlacement='outside' 
+                          defaultValue={project.interns[1]?.name || "N/A"}
+                          className="w-full md:w-1/2"
+                      />
+                  </div>
+
+                  <div className="flex flex-wrap md:flex-nowrap gap-6">
+                      <Input 
+                          variant='bordered' 
+                          // isDisabled
+                          label="Member 3" 
+                          labelPlacement='outside' 
+                          defaultValue={project.interns[2]?.name || "N/A"}
+                          className="w-full md:w-1/2"
+                      />
+
+                      <Input 
+                          variant='bordered' 
+                          // isDisabled
+                          label="Member 4" 
+                          labelPlacement='outside' 
+                          defaultValue={project.interns[3]?.name || "N/A"}
+                          className="w-full md:w-1/2"
+                      />
+                  </div>
+
+                  <div className='flex justify-between'>
+                    <Button variant='bordered' className='font-bold text-blue border-blue'>Add More Members</Button>
+                    <Button className='font-bold text-white bg-green'>Save Changes</Button>
+                  </div>
+
                   {/* Past Attendance Table */}
-                  <div className="mt-20">
+                  {/* <div className="mt-20">
                       <div className='flex justify-between items-center mt-10 mb-3'>
                           <h2 className="font-semibold text-md mb-2">Attendance</h2>
 
-                          {/* Button to Open Attendance Modal */}
                           <div className="">
                               <Button className="font-bold text-white bg-green" onClick={() => {
                                     setSelectedInterns(project.interns);
@@ -505,20 +480,17 @@ const handleSaveAttendance = async () => {
                             </TableRow>
                         )}
                     </TableBody>
-                </Table>
-
-
-                  </div>
+                  </Table>
+                </div> */}
               </div>
           </CardBody>
 
           {/* Attendance Marking Modal */}
-          <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)}>
+          {/* <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)}>
             <ModalContent>
                       <ModalHeader>Mark Attendance</ModalHeader>
                       <ModalBody>
                           
-                          {/* Select Date */}
                           <DatePicker 
                               variant='bordered' 
                               label="Select Attendance Date" 
@@ -528,7 +500,6 @@ const handleSaveAttendance = async () => {
                               className="w-full"
                           />
 
-                          {/* Attendance Table Inside Modal */}
                           <Table>
                               <TableHeader>
                                   <TableColumn>Member Name</TableColumn>
@@ -558,7 +529,7 @@ const handleSaveAttendance = async () => {
                           </Button>
                       </ModalFooter>
                   </ModalContent>
-              </Modal>
+              </Modal> */}
           </Card>
         ))}
       </div>
@@ -644,24 +615,6 @@ const handleSaveAttendance = async () => {
                   granularity="day" 
                   value={targetDate}
                 />
-
-                {/* {[0, 1, 2, 3].map((index) => (
-                  <Select
-                    key={index}
-                    label={`Member ${index + 1}`}
-                    labelPlacement="outside"
-                    placeholder={`Select member ${index + 1}`}
-                    variant="bordered"
-                    value={members[index]}
-                    onChange={(e) => handleMemberChange(index, e.target.value)} // Update the correct member index
-                  >
-                    {interns.map((intern) => (
-                      <SelectItem key={intern.internId} value={intern.internId}>
-                        {intern.name}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                ))} */}
 
                 <Select
                   label="Member 1"
