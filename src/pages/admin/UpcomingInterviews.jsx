@@ -26,6 +26,7 @@ const UpcomingInterviews = () => {
         }
       ) 
         .then(response => {
+          const today = new Date().toISOString().split('T')[0];
           const filteredApplicants = response.data.filter(applicant => applicant.state === 1);
           setApplicants(filteredApplicants);
         })

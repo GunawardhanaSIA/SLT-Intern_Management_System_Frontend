@@ -12,7 +12,6 @@ import {
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { u } from "framer-motion/client";
 import { jwtDecode } from "jwt-decode";
 
 export const superviser = [

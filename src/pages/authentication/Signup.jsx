@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import emailjs from '@emailjs/browser';
 import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const Signup = () => {
     const [username, setUsername] = useState('');
@@ -17,104 +18,138 @@ const Signup = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
-    const toggleVisibility = () => setIsVisible(!isVisible);
-    const toggleVisibility1 = () => setIsVisible1(!isVisible1);
+    // const toggleVisibility = () => setIsVisible(!isVisible);
+    // const toggleVisibility1 = () => setIsVisible1(!isVisible1);
 
     const handleLogin = () => {
       navigate('/authenticate/signin');
     };
 
-    const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
+    // const generateOTP = () => Math.floor(1000 + Math.random() * 9000);
 
-    const handleSignUp = async () => {
-        // Validate fields
-        if (!username || !password || !reEnterPassword) {
-          setErrorMessage("All fields are required.");
-          return;
-        }
+    // const handleSignUp = async () => {
+    //     Validate fields
+    //     if (!username) {
+    //       setErrorMessage("Username is required.");
+    //       return;
+    //     }
     
-        // Validate password match
-        if (password !== reEnterPassword) {
-          setErrorMessage("Passwords do not match.");
-          return;
-        }
+    //     Validate password match
+    //     if (password !== reEnterPassword) {
+    //       setErrorMessage("Passwords do not match.");
+    //       return;
+    //     }
     
-        try {
-          const response = await axios.post("http://localhost:8080/signup", {
-            username,
-            password,
-            role: "Intern"
-          });
-          console.log("jwt token: ", response.data);
+    //     try {
+    //       const response = await axios.post("http://localhost:8080/signup", {
+    //         username,
+    //         password,
+    //         role: "Intern"
+    //       });
+    //       console.log("jwt token: ", response.data);
 
-          if (response.status === 200) {
-            setSuccessMessage("Registration successful. Please check your email to confirm.");
-            setTimeout(() => {
-              navigate(`/authenticate/confirm-email?email=${username}`);
-            }, 2000);
+    //       if (response.status === 200) {
+    //         setSuccessMessage("Registration successful. Please check your email to confirm.");
+    //         setTimeout(() => {
+    //           navigate(`/authenticate/confirm-email?email=${username}`);
+    //         }, 2000);
 
-            const otp = generateOTP();
-            console.log(otp);
+    //         const otp = generateOTP();
+    //         console.log(otp);
 
-            const emailData = {
-              send_to: username,
-              message: otp,
-            };
+    //         const emailData = {
+    //           send_to: username,
+    //           message: otp,
+    //         };
 
-            const emailResponse = await emailjs.send(
-              import.meta.env.VITE_EMAILJS_SERVICE_ID,
-              import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID,
-              emailData,
-              import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-            );
+    //         const emailResponse = await emailjs.send(
+    //           import.meta.env.VITE_EMAILJS_SERVICE_ID,
+    //           import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID,
+    //           emailData,
+    //           import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    //         );
 
-            if (emailResponse.status === 200) {
-              console.log("OTP email sent successfully:", emailResponse);
+    //         if (emailResponse.status === 200) {
+    //           console.log("OTP email sent successfully:", emailResponse);
 
-              const otpStoreResponse = await axios.post("http://localhost:8080/storeOTP", {
-                email: username,
-                otp: otp
-              });
+    //           const otpStoreResponse = await axios.post("http://localhost:8080/storeOTP", {
+    //             email: username,
+    //             otp: otp
+    //           });
 
-              if (otpStoreResponse.status === 201) {
-                  console.log("OTP stored successfully on backend.");
-              } else {
-                  console.error("Failed to store OTP on backend:", otpStoreResponse);
-                  setErrorMessage("Failed to store OTP. Please try again.");
-              }
-            }  
-          } else {
-            console.error("Failed to send OTP email:", emailResponse);
-            setErrorMessage("Failed to send OTP. Please try again.");
-            return;
-          }
-        } catch (error) {
-          console.log("Signup failed:", error);
+    //           if (otpStoreResponse.status === 201) {
+    //               console.log("OTP stored successfully on backend.");
+    //           } else {
+    //               console.error("Failed to store OTP on backend:", otpStoreResponse);
+    //               setErrorMessage("Failed to store OTP. Please try again.");
+    //           }
+    //         }  
+    //       } else {
+    //         console.error("Failed to send OTP email:", emailResponse);
+    //         setErrorMessage("Failed to send OTP. Please try again.");
+    //         return;
+    //       }
+    //     } catch (error) {
+    //       console.log("Signup failed:", error);
+    //     }
+    // };
+
+    const handleGoogleSignUpSuccess = async (token) => {
+      console.log("Google JWT:", token);
+      const decodedToken = jwtDecode(token);
+      console.log("Decoded token: ", decodedToken)
+      const username = decodedToken.email
+      console.log("Decoded email: ", username)
+
+      try {
+        const response = await axios.post("http://localhost:8080/signup", {
+          username,
+          role: "Intern"
+        });
+        if (response.status === 200) {
+          console.log("sign-up response data: ", response.data);
+          const responseToken = response.data.jwt
+          const decodedResponseToken = jwtDecode(responseToken);
+          console.log("Decoded response token: ", decodedResponseToken)
+          const user_id = decodedResponseToken.user_id;
+          console.log("Signed up intern's user ID: ", user_id)
+          
+          // Save the token with expiration time (3 days)
+          const expirationTime = new Date();
+          expirationTime.setDate(expirationTime.getDate() + 3); // 3 days from now
+          localStorage.setItem("token", responseToken);
+          localStorage.setItem("tokenExpiration", expirationTime.getTime());
+
+          navigate("/intern");
         }
+      } catch (error) {
+        console.log("Signup failed:", error);
+      }
     };
 
 
   return (
     <div>
-      <h1 className='text-3xl font-bold flex justify-center'>Let’s get started</h1>
-      <p className='text-gray flex text-center mt-1'>Create your account to apply for internships with <br/>SLTMobitel - Digital Platforms</p>
+      <h1 className='text-4xl flex justify-center'>Let’s get started</h1>
+      {/* <p className='text-gray flex w-full justify-center items-center mt-4'>Create your account to apply for internships with SLTMobitel - Digital Platforms</p> */}
       
-      <div className='mt-6 mb-4 flex flex-col gap-4'>
-        <Input 
+      <div className='mt-6 mb-4 flex  justify-center items-center '>
+        {/* <Input 
+        className='w-96 flex justify-center items-center'
             variant='bordered' 
             size='md' 
             labelPlacement='outside' 
             label={
                 <span>
-                Username<span className='text-red'> *</span>
+                Email<span className='text-red'> *</span>
                 </span>
             } 
-            placeholder="Enter your email" 
+            placeholder="Enter your gmail" 
             type="email"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-        />
-        <Input 
+        /> */}
+        {/* <Input 
             variant='bordered' 
             size='md' 
             labelPlacement='outside' 
@@ -141,8 +176,8 @@ const Signup = () => {
                 )}
                 </button>
             }
-        />
-        <Input 
+        /> */}
+        {/* <Input 
             variant='bordered' 
             size='md' 
             labelPlacement='outside' 
@@ -169,24 +204,26 @@ const Signup = () => {
                 )}
                 </button>
             }
-        />
+        /> */}
       </div>
   
       {errorMessage && <p className="text-red font-light text-xs mt-4">{errorMessage}</p>}
 
-      <div className='mt-4'>
-        <Button className='w-full bg-blue font-bold text-white mb-2' onPress={handleSignUp}>Sign up</Button>
+      <div className='mt-4 flex justify-center items-center flex-col'>
+        {/* <Button className='w-96 bg-blue font-bold text-white mb-2' onPress={handleSignUp}>Continue</Button> */}
         <div className='w-full flex justify-center'>
           <GoogleLogin 
             onSuccess={credentialResponse => {
-              console.log(credentialResponse);
+              handleGoogleSignUpSuccess(credentialResponse.credential);
             }}
             onError={() => {
-              console.log('Login Failed');
+              console.log('Sign up Failed');
+              setErrorMessage("Sign up failed")
             }}
             size="large" 
-            width="385" 
+            width="300" 
             text="continue_with"
+            pr
           />
         </div>
         <p className='flex gap-2 justify-center mt-2 text-sm text-gray'>Already have an account? <span className='text-blue font-semibold'><a className='cursor-pointer' onClick={handleLogin}>Sign in</a></span></p>

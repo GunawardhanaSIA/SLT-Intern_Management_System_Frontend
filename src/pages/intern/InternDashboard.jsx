@@ -138,14 +138,33 @@ const InternDashboard = () => {
             // const uploadedResumeURL = await cloudinaryResp.json();
             // console.log("Uploaded Resume URL:", uploadedResumeURL.url);
 
-            const uploadedResumeURL = await uploadResumeToSupabase();
-            if (!uploadedResumeURL) return;
-            console.log("resume url: ", uploadedResumeURL)
+            // const uploadedResumeURL = await uploadResumeToSupabase();
+            // if (!uploadedResumeURL) return;
+            // console.log("resume url: ", uploadedResumeURL)
+
+            // const finalFormData = {
+            //     ...formData,
+            //     resumeURL: uploadedResumeURL
+            // };
+
+            const fileData = new FormData()
+            fileData.append("resume", selectedFile)
+
+            const resumeResponse = await axios.post("http://localhost:8080/intern/apply/resumeUpload", fileData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const resumeResponsedata = resumeResponse.data;
+            const resumeURL = resumeResponsedata.uri
+            console.log("File uploaded to: ", resumeURL);
 
             const finalFormData = {
                 ...formData,
-                resumeURL: uploadedResumeURL
+                resumeURL: resumeURL
             };
+    
 
             console.log("Final Form Data:", finalFormData);
 
@@ -404,7 +423,7 @@ const InternDashboard = () => {
                 <div className="flex flex-col gap-4 mt-12">
                     <label htmlFor="file-upload" className="flex flex-col text-sm">
                         <span className="flex items-center">
-                            12. Upload Resume<span className="text-red ml-1">*</span>
+                            12. Upload Resume (Max Size: 1MB)<span className="text-red ml-1">*</span>
                         </span>
                         {/* <input
                         id="file-upload"

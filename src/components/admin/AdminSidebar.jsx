@@ -41,16 +41,16 @@ export default function AdminSidebar({children}) {
             </SidebarContext.Provider>
 
             <div className='border-t border-zinc-200 flex p-3'>
-                <FaUserAlt className='w-10 h-10 rounded-lg p-1.5 border-1.5 text-zinc-600'/>
-                <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3": "w-0"}`}>
+                <FaUserAlt className='w-8 h-8 rounded-lg p-1.5 border-1.5 text-zinc-600'/>
+                <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-2": "w-0"}`}>
                     <div className='leading-4'>
                         <h4 className='font-semibold text-zinc-600'>Admin</h4>
                         <span className='text-xs text-zinc-600'>{email}</span>
                     </div>
                     {/* Logout Icon with Click Handler */}
-                    <button onClick={() => logout(navigate)}>
+                    {/* <button onClick={() => logout(navigate)}>
                         <FiLogOut className='text-2xl text-zinc-600 cursor-pointer'/>
-                    </button>
+                    </button> */}
                 </div>
             </div>
         </nav>
