@@ -11,13 +11,12 @@ const SignupSuccessful = () => {
 
   return (
     <div>
-      <h1 className='text-3xl font-bold flex justify-center'>Sign-up Successful!</h1>
-      <p className='text-gray flex flex-col justify-center text-center mt-1'>
-        Please log-in to your account to apply to your internship with SLTMobitel - Digital Platforms
+      <h1 className='text-2xl font-semibold flex justify-center'>Registration is complete!</h1>
+      <p className='text-gray flex flex-col justify-center text-center mt-6'>
+      Thank you for verifying your email. You can now log in to your account.
       </p>
-      
-      <div className='mt-10 mb-4 flex justify-center w-full'>
-            <Button className='bg-blue font-bold text-white mx-6 w-full' type="submit" onPress={handleLogin}>Sign in</Button>
+      <div className='flex w-full justify-center items-center mt-6'>
+        <Button className='flex w-full bg-blue text-white font-bold' onPress={handleLogin}>Log in</Button>
       </div>
     </div>
   )

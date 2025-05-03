@@ -7,6 +7,7 @@ import Signup from "../pages/authentication/Signup"
 import Otp from "../pages/authentication/Otp"
 import SignupSuccessful from "../pages/authentication/SignupSuccessful"
 import Signin from "../pages/authentication/Signin"
+import ThankYouForRegistering from "../pages/authentication/ThankYouForRegistering"
 
 //Intern
 import Intern from "../layout/Intern"
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
             {
                 path: "/authenticate/signin",
                 element: <Signin/>
+            },
+            {
+                path: "/authenticate/thank-you-for-registering",
+                element: <ThankYouForRegistering/>
             },
             {
                 path: "/authenticate/signup-successful",
