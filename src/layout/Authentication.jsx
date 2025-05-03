@@ -9,7 +9,7 @@ const Authentication = () => {
     return (
     <div className='flex items-center justify-center h-screen'>
         <Card className='w-7/12'>
-            <CardBody className='flex flex-row px-10'>
+            <CardBody className='flex flex-row p-10'>
                 <div className='w-7/12 flex items-center justify-center'>
                     <a href="/"><img src="/logo.png" alt="logo" /></a>
                 </div>
