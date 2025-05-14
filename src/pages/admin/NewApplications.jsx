@@ -16,6 +16,7 @@ const NewApplications = () => {
     const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
     const [interviewee, setInterviewee] = useState(null);
     const [selectedApplicant, setSelectedApplicant] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [date, setDate] = useState(null); // Start with null
     const [time, setTime] = useState(null);
 
@@ -40,6 +41,28 @@ const NewApplications = () => {
           console.error("Error fetching applicants:", error);
         });
     }, []);
+
+    const visibleIds = applicants.map(app => app.applicantId);
+    const isAllSelected = visibleIds.every(id => selectedIds.includes(id)) && visibleIds.length > 0;
+
+    const handleSelectAll = () => {
+      if (isAllSelected) {
+        // Deselect all visible ones
+        setSelectedIds(selectedIds.filter(id => !visibleIds.includes(id)));
+      } else {
+        // Add all visible ones
+        const newSelection = [...new Set([...selectedIds, ...visibleIds])];
+        setSelectedIds(newSelection);
+      }
+    };
+
+    const handleSelectOne = (id) => {
+      if (selectedIds.includes(id)) {
+        setSelectedIds(selectedIds.filter(appId => appId !== id));
+      } else {
+        setSelectedIds([...selectedIds, id]);
+      }
+    };
   
     const handleEyeClick = (applicant) => {
       setSelectedApplicant(applicant);
@@ -118,28 +141,55 @@ const NewApplications = () => {
   
     return (
       <div className="mx-6 mt-6">
-        <div className="table_component mt-4" role="region" tabIndex="0">
+        <div className='flex gap-6 items-center'>
+          <p className='text-zinc-500'>Filter Applications</p>
+          <Input
+            className='w-80'
+            placeholder="Type here ..."
+            variant='bordered'
+            startContent={
+              <IoSearch className="text-xl text-default-300 pointer-events-none flex-shrink-0" />
+            }
+            type="text"
+          />
+        </div>
+        <div className="table_component mt-6" role="region" tabIndex="0">
           <table>
             <thead className="text-sm font-thin">
               <tr className='text-xs text-gray-500'>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4"
+                  />
+                </th>
                 <th>Applicant ID</th>
+                <th>Specialization</th>
                 <th>Name</th>
                 <th>Address</th>
                 <th>Degree/Course</th>
                 <th>Institute</th>
-                <th>Specialization</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody className="text-xs align-top">
               {applicants.map(applicant => (
                 <tr key={applicant.applicantId}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(applicant.applicantId)}
+                        onChange={() => handleSelectOne(applicant.applicantId)}
+                      />
+                    </td>
                     <td>{`A${String(applicant.applicantId).padStart(6, '0')}`}</td>
+                    <td>{applicant.specialization}</td>
                     <td>{applicant.name}</td>
                     <td>{applicant.address}</td>
                     <td>{applicant.degree}</td>
                     <td>{applicant.educationalInstitute}</td>
-                    <td>{applicant.specialization}</td>
                     <td>
                       <div className="relative flex items-center gap-2">
                         <Tooltip content="Details">
