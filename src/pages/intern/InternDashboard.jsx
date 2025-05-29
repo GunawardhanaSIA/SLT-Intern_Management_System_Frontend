@@ -2,7 +2,12 @@ import { Input, RadioGroup, Select, SelectItem, Radio, Button, Card, CardHeader,
 import React, {useRef, useState} from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { supabase } from "../../SupabaseClient";
+import * as pdfjsLib from "pdfjs-dist";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.js",
+  import.meta.url
+).toString();
 
 export const educationalInstitute = [
     { key: "University of Colombo", label: "University of Colombo" },
@@ -41,6 +46,7 @@ const InternDashboard = () => {
     const [uploading, setUploading] = useState(false);
     const [resumeURL, setResumeURL] = useState("");
     const [selectedInstitute, setSelectedInstitute] = useState("");
+    const [resumeText, setResumeText] = useState("")
     const formRef = useRef(null)
 
     // const handleFileChange = async (event) => {
@@ -53,41 +59,27 @@ const InternDashboard = () => {
         const file = event.target.files[0];
         if (file) {
             setSelectedFile(file);
+
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const typedArray = new Uint8Array(this.result);
+
+                const pdf = await pdfjsLib.getDocument({data:typedArray}).promise;
+                let allText = "";
+
+                for(let i=1; i<=pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const strings = content.items.map(item => item.str)
+                    const joinedText = strings.join(" ");
+                    // const cleanedText = joinedText.replace(/[^a-zA-Z ]/g, ""); 
+
+                    allText += joinedText + " ";
+                }
+                setResumeText(allText)
+            }
+            reader.readAsArrayBuffer(file)
         }
-    };
-
-    const uploadResumeToSupabase = async () => {
-        if (!selectedFile) {
-            alert("Please select a file to upload!");
-            return;
-        }
-
-        setUploading(true);
-        // const filePath = `resumes/${Date.now()}_${selectedFile.name}`;
-
-        const fileExt = selectedFile.name.split(".").pop(); // Get the file extension
-        const randomName = Math.random().toString(36).substring(2, 10); // Generate a random string
-        const fileName = `${randomName}.${fileExt}`; // Append the file extension
-        const filePath = `${fileName}`; // Set the file path
-
-        let { data, error } = await supabase.storage
-            .from("resumes")
-            .upload(filePath, selectedFile);
-
-        if (error) {
-            console.error("Upload error:", error.message);
-            alert("Resume upload failed!");
-            setUploading(false);
-            return null;
-        }
-
-        const { data: url } = await supabase.storage
-            .from("resumes")
-            .getPublicUrl(filePath);
-
-        setResumeURL(url.publicUrl);
-        setUploading(false);
-        return url.publicUrl;
     };
 
     const [formData, setFormData] = useState({
@@ -116,37 +108,13 @@ const InternDashboard = () => {
         alert("Please upload your resume before submitting!");
         return;
         }
+
+        console.log("Extracted Resume Text:", resumeText);
         
         const token = localStorage.getItem("token");
         console.log(token)
 
-        // const decodedToken = jwtDecode(token);
-        // console.log(decodedToken.user_id);
-
         try {
-            // const fileData = new FormData();
-            // fileData.append("file", selectedFile);
-            // fileData.append("upload_preset", "SLTMobitel");
-            // fileData.append("cloud_name", "dljhk5ajd");
-            // fileData.append("resource_type", "raw"); 
-      
-            // const cloudinaryResp = await fetch("https://api.cloudinary.com/v1_1/dljhk5ajd/raw/upload", {
-            //     method: "POST",
-            //     body: fileData
-            // })
-
-            // const uploadedResumeURL = await cloudinaryResp.json();
-            // console.log("Uploaded Resume URL:", uploadedResumeURL.url);
-
-            // const uploadedResumeURL = await uploadResumeToSupabase();
-            // if (!uploadedResumeURL) return;
-            // console.log("resume url: ", uploadedResumeURL)
-
-            // const finalFormData = {
-            //     ...formData,
-            //     resumeURL: uploadedResumeURL
-            // };
-
             const fileData = new FormData()
             fileData.append("resume", selectedFile)
 
@@ -162,7 +130,8 @@ const InternDashboard = () => {
 
             const finalFormData = {
                 ...formData,
-                resumeURL: resumeURL
+                resumeURL: resumeURL,
+                resumeText: resumeText
             };
     
 

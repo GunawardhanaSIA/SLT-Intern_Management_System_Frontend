@@ -2,11 +2,12 @@ import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import { getToken } from '../authentication/Auth';
 import "../../Table.css";
-import {Button, Select, SelectItem, Input, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, RadioGroup, Radio, Textarea, DateInput, TimeInput} from "@nextui-org/react";
+import {Button, Select, SelectItem, Input, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, RadioGroup, Radio, Textarea, DateInput, TimeInput, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { IoSearch } from "react-icons/io5";
 import { FaRegEye } from "react-icons/fa6";
 import { FaUserCheck } from "react-icons/fa6";
 import { FaUserXmark } from "react-icons/fa6";
+import { IoIosArrowDown } from "react-icons/io";
 import emailjs from '@emailjs/browser';
 
 
@@ -19,6 +20,11 @@ const NewApplications = () => {
     const [selectedIds, setSelectedIds] = useState([]);
     const [date, setDate] = useState(null); // Start with null
     const [time, setTime] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["All"]));
+    const [rankedApplicants, setRankedApplicants] = useState([]);
+    const [isRankModalOpen, setIsRankModalOpen] = useState(false);
+    const [selectedRankedIds, setSelectedRankedIds] = useState([]);
 
     useEffect(() => {
       const token = getToken();
@@ -42,6 +48,17 @@ const NewApplications = () => {
         });
     }, []);
 
+
+
+    // specialization dropdown
+    const selectedValue = React.useMemo(
+      () => Array.from(selectedKeys).join(", ").replace(/_/g, ""),
+      [selectedKeys],
+    );
+
+
+
+    // checkbox to select applicants
     const visibleIds = applicants.map(app => app.applicantId);
     const isAllSelected = visibleIds.every(id => selectedIds.includes(id)) && visibleIds.length > 0;
 
@@ -63,7 +80,91 @@ const NewApplications = () => {
         setSelectedIds([...selectedIds, id]);
       }
     };
+
+
+
+    // calling python API to rank resumes
+    const handleRankResumes = () => {
+      // Filter selected applicants
+      const selectedApplicants = applicants.filter(applicant =>
+        selectedIds.includes(applicant.applicantId)
+      );
+
+      const selectedValue = Array.from(selectedKeys)[0];
+
+      if (selectedValue === "All") {
+        alert("Please select a specialization before ranking CVs");
+        return;
+      }
+
+      // Prepare the payload to match FastAPI structure
+      const payload = {
+        specialization: selectedValue,
+        applicants: selectedApplicants.map(app => ({
+          id: app.applicantId,
+          resumeText: app.resumeText 
+        }))
+      };
+
+      console.log("Payload to Python API:", payload);
+
+      axios.post("http://localhost:8001/rank_cvs", payload, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log("Raw response data:", response.data);
+        const formatted = response.data.rankedApplicants
+        .sort((a, b) => a.rank - b.rank)  
+        .map(app => {
+          const original = selectedApplicants.find(a => a.applicantId === app.id);
+          return {
+            id: app.id,
+            name: original?.name || `Applicant ${app.id}`,
+            score: app.score
+          };
+        });
+        setRankedApplicants(formatted);
+        setIsRankModalOpen(true);
+      })
+      .catch(error => {
+        console.error("Error ranking resumes:", error);
+      });
+    };
+
+
+    const handleRankedSelectOne = (id) => {
+      setSelectedRankedIds(prev =>
+        prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+      );
+    };
+
+    const handleSendToSystem = () => {
+      const selected = rankedApplicants.filter(app => selectedRankedIds.includes(app.id));
+      console.log("Send to system:", selected);
+
+      // You can send them to your backend with axios:
+      // axios.post("/api/send_applicants", selected)
+    };
+
+
+
+    // fiter applicants by search input
+    const filteredApplicants = applicants.filter((applicant) => {
+      const matchesSearch = Object.values(applicant).some(value =>
+        String(value).toLowerCase().includes(searchTerm)
+      );
+
+      const selectedSpecialization = selectedValue;
+      const matchesSpecialization =
+        selectedSpecialization === "All" || applicant.specialization === selectedSpecialization;
+
+      return matchesSearch && matchesSpecialization;
+    });
   
+
+
     const handleEyeClick = (applicant) => {
       setSelectedApplicant(applicant);
       setIsModalOpen(true); // Open the modal when the "eye" is clicked
@@ -141,17 +242,43 @@ const NewApplications = () => {
   
     return (
       <div className="mx-6 mt-6">
-        <div className='flex gap-6 items-center'>
-          <p className='text-zinc-500'>Filter Applications</p>
-          <Input
-            className='w-80'
-            placeholder="Type here ..."
-            variant='bordered'
-            startContent={
-              <IoSearch className="text-xl text-default-300 pointer-events-none flex-shrink-0" />
-            }
-            type="text"
-          />
+        <div className='flex justify-between'>
+          <div className='flex gap-6 items-center'>
+            <p className='text-zinc-500'>Filter Applications</p>
+            <Input
+              className='w-80'
+              placeholder="Type here ..."
+              variant='bordered'
+              startContent={
+                <IoSearch className="text-xl text-default-300 pointer-events-none flex-shrink-0" />
+              }
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+            />
+          </div>
+          <div className='flex gap-1 items-center'>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button variant="flat" selectionMode="single">{selectedValue}<IoIosArrowDown/></Button>
+              </DropdownTrigger>
+              <DropdownMenu 
+                disallowEmptySelection
+                aria-label="Single selection example"
+                selectedKeys={selectedKeys}
+                selectionMode="single"
+                variant="flat"
+                onSelectionChange={setSelectedKeys}
+              >
+                <DropdownItem key="All">All</DropdownItem>
+                <DropdownItem key="Fullstack">Fullstack</DropdownItem>
+                <DropdownItem key="QA">QA</DropdownItem>
+                <DropdownItem key="BA">BA</DropdownItem>
+                <DropdownItem key="DevOps">DevOps</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            <Button className='bg-green font-bold text-white' isDisabled={selectedIds.length === 0} onClick={handleRankResumes}>Rank Resumes</Button>
+          </div>
         </div>
         <div className="table_component mt-6" role="region" tabIndex="0">
           <table>
@@ -175,11 +302,12 @@ const NewApplications = () => {
               </tr>
             </thead>
             <tbody className="text-xs align-top">
-              {applicants.map(applicant => (
+              {filteredApplicants.map(applicant => (
                 <tr key={applicant.applicantId}>
                     <td>
                       <input
                         type="checkbox"
+                        className="w-4 h-4"
                         checked={selectedIds.includes(applicant.applicantId)}
                         onChange={() => handleSelectOne(applicant.applicantId)}
                       />
@@ -302,6 +430,54 @@ const NewApplications = () => {
               </Button>
               <Button className='bg-green text-white font-bold' onPress={() => handleSendEmail(interviewee.applicantId, interviewee.email, date, time)}>
                 Send Email
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        <Modal isOpen={isRankModalOpen} onClose={() => setIsRankModalOpen(false)} size="4xl">
+          <ModalContent>
+            <ModalHeader className="text-blue">Ranked Applicants</ModalHeader>
+            <ModalBody>
+              {rankedApplicants.length > 0 ? (
+                <div className="overflow-auto max-h-[400px]">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-gray-500">
+                      <tr>
+                        <th>Select</th>
+                        <th>Applicant ID</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rankedApplicants.map((app, index) => (
+                        <tr key={app.id}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={selectedRankedIds.includes(app.id)}
+                              onChange={() => handleRankedSelectOne(app.id)}
+                            />
+                          </td>
+                          <td>{`A${String(app.id).padStart(6, '0')}`}</td>
+                          <td>{app.name}</td>
+                          <td>{app.score?.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p>No ranked applicants to show.</p>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" variant="light" onPress={() => setIsRankModalOpen(false)}>
+                Close
+              </Button>
+              <Button className="bg-green text-white font-bold" onPress={handleSendToSystem} isDisabled={selectedRankedIds.length === 0}>
+                Send Selected
               </Button>
             </ModalFooter>
           </ModalContent>
