@@ -1,3 +1,4 @@
+import { Button } from '@nextui-org/react';
 import React from 'react'
 import { FaUser } from "react-icons/fa";
 
@@ -33,7 +34,7 @@ const SupervisorNavbar = ({title}) => {
               <FaUser className='w-5 h-5 text-zinc-600'/>
             </div>
           </div>
-          <ul
+          {/* <ul
             tabIndex={0}
             className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
             <li>
@@ -44,7 +45,8 @@ const SupervisorNavbar = ({title}) => {
             </li>
             <li><a>Settings</a></li>
             <li><a>Logout</a></li>
-          </ul>
+          </ul> */}
+          <Button className='font-bold text-blue border-blue' variant='bordered' onPress={() => logout(navigate)}>Log out</Button>
         </div>
       </div>
     </div>
