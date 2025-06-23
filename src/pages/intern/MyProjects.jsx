@@ -1,94 +1,117 @@
 import {
-  Input,
-  RadioGroup,
-  Select,
-  SelectItem,
-  Radio,
   Button,
   Card,
   CardHeader,
   CardBody,
+  Avatar,
+  Chip,
+  Tooltip,
 } from "@nextui-org/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
-export const superviser = [
-  { key: "M.Giri", label: "M. Giridaran" },
-  { key: "JaneDoe", label: "Jane Doe" },
-  { key: "JohnDoe", label: "John Doe" },
-  { key: "ChamaraJayas", label: "C.Jayashinha" },
-];
-
 const MyProjects = () => {
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [resumeURL, setResumeURL] = useState("");
-  const [userID, setUserID] = useState("");
-  const [selectedInstitute, setSelectedInstitute] = useState("");
+  const [internData, setInternData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
-    console.log(file);
-    setSelectedFile(file);
-  };
-
-  const [formData, setFormData] = useState({
-    name: "",
-    nic: "",
-    mobileNumber: "",
-    email: "",
-    address: "",
-    educationalInstitute: "",
-    degree: "",
-    academicYear: "",
-    internshipPeriod: "",
-    superviser: "",
-    programmingLanguages: "",
-    resumeURL: "",
-  });
-
-  const handleChange = (field, value) => {
-    setFormData((prevData) => ({ ...prevData, [field]: value }));
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedFile) {
-      alert("Please upload your resume before submitting!");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No authentication token found. Please log in and try again.");
+      setLoading(false);
       return;
     }
 
-    const token = localStorage.getItem("token");
-    console.log(token);
-
     const decodedToken = jwtDecode(token);
-    console.log(decodedToken.user_id);
-    setUserID(decodedToken.user_id);
 
-    try {
-      const fileData = new FormData();
-      fileData.append("file", selectedFile);
-      fileData.append("upload_preset", "SLTMobitel");
-      fileData.append("cloud_name", "dljhk5ajd");
-      fileData.append("resource_type", "raw");
+    axios
+      .get(`http://localhost:8080/intern/getIntern/${decodedToken.user_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setInternData(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching intern data:", err);
+        setError("Failed to fetch your project data. Please check your internet connection or try again later.");
+        setLoading(false);
+      });
+  }, []);
 
-      const cloudinaryResp = await fetch(
-        "https://api.cloudinary.com/v1_1/dljhk5ajd/raw/upload",
-        {
-          method: "POST",
-          body: fileData,
-        }
-      );
+  const handleCancel = () => {
+    navigate("/");
+  };
 
-      const uploadedResumeURL = await cloudinaryResp.json();
-      console.log("Uploaded Resume URL:", uploadedResumeURL.url);
+  const getProjectStatusColor = (startDate, targetDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const target = new Date(targetDate);
+    
+    if (today < start) return "primary";
+    if (today > target) return "danger";
+    return "success";
+  };
 
-      const finalFormData = {
-        ...formData,
-        user_id: decodedToken.user_id,
-        resumeURL: uploadedResumeURL.url,
-      };
+  const getProjectStatusText = (startDate, targetDate) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const target = new Date(targetDate);
+    
+    if (today < start) return "Upcoming";
+    if (today > target) return "Overdue";
+    return "In Progress";
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <p className="text-lg text-gray-600" aria-live="polite">
+            Loading your projects, please wait...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+        <Card className="w-96 p-6 shadow-lg">
+          <CardBody className="text-center">
+            <div className="text-red-600 text-6xl mb-4" role="img" aria-label="Warning sign">⚠️</div>
+            <h2 className="text-xl font-bold text-red-700 mb-2">Oops! Something Went Wrong</h2>
+            <p className="text-gray-600 mb-4" aria-live="polite">{error}</p>
+            <Tooltip content="Refresh the page to try again" placement="top">
+              <Button color="danger" onClick={() => window.location.reload()} aria-label="Try again">
+                Try Again
+              </Button>
+            </Tooltip>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br py-8">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#4db849] to-[#4db849] bg-clip-text text-transparent mb-2" role="heading" aria-level="1">
+            My Projects Dashboard
+          </h1>
+          <p className="text-gray-600">Track and manage your internship projects</p>
+        </div>
+
 
       console.log("Final Form Data:", finalFormData);
 
