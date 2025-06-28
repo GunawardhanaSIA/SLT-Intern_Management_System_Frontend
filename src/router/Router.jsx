@@ -34,6 +34,9 @@ import ResetPassword from "../pages/authentication/ResetPassword"
 import ResetPasswordSuccessfull from "../pages/authentication/ResetPasswordSuccessfull"
 import Attendance from "../pages/supervisor/Attendance"
 
+// Debug
+import DebugPanel from "../components/DebugPanel"
+
 
 
 const router = createBrowserRouter([
@@ -150,6 +153,10 @@ const router = createBrowserRouter([
                 element: <Attendance/>
             },
         ]
+    },
+    {
+        path: "/debug",
+        element: <DebugPanel/>
     },
 ])
 
