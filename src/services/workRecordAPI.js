@@ -68,12 +68,6 @@ apiClient.interceptors.response.use(
 
 // Work Records API
 export const workRecordAPI = {
-  // Get intern information including supervisor details
-  getInternInfo: async (userId) => {
-    const response = await apiClient.get(`/intern/getIntern/${userId}`);
-    return response.data;
-  },
-
   // Create a new work record
   createWorkRecord: async (workRecordData) => {
     const response = await apiClient.post("/api/work-records", workRecordData);

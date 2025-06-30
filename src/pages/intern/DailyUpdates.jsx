@@ -17,11 +17,10 @@ const InternDailyRecords = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [supervisorName, setSupervisorName] = useState('');
   const [currentRecord, setCurrentRecord] = useState({
     tasks: '',
     hoursWorked: '',
-    department: 'DIGITAL PLATFORM',
+    department: 'GENERAL',
     supervisor: '',
     achievements: '',
     challenges: '',
@@ -29,7 +28,7 @@ const InternDailyRecords = () => {
     status: 'COMPLETED'
   });
 
-  const departments = ['DIGITAL PLATFORM', 'MARKETING', 'ENGINEERING', 'FINANCE', 'OPERATIONS', 'DESIGN', 'SALES'];
+  const departments = ['GENERAL', 'MARKETING', 'ENGINEERING', 'HR', 'FINANCE', 'OPERATIONS', 'DESIGN', 'SALES'];
   const statusOptions = ['COMPLETED', 'IN_PROGRESS', 'PENDING', 'ON_HOLD'];
 
   // Load data on component mount and when current date changes
@@ -45,38 +44,9 @@ const InternDailyRecords = () => {
     // Test backend connection
     testBackendConnection();
     
-    // Load intern supervisor information
-    loadInternSupervisor();
-    
     loadWorkRecords();
     loadStats();
   }, [currentDate]);
-
-  // Load intern supervisor information
-  const loadInternSupervisor = async () => {
-    try {
-      const userId = getUserId();
-      if (userId) {
-        console.log('Fetching intern info for user ID:', userId);
-        const internData = await workRecordAPI.getInternInfo(userId);
-        console.log('Intern data received:', internData);
-        
-        if (internData && internData.intern && internData.intern.supervisor) {
-          const supervisor = internData.intern.supervisor;
-          setSupervisorName(supervisor.name);
-          console.log('Supervisor name set to:', supervisor.name);
-          
-          // Update current record with supervisor name
-          setCurrentRecord(prev => ({
-            ...prev,
-            supervisor: supervisor.name
-          }));
-        }
-      }
-    } catch (err) {
-      console.error('Error loading intern supervisor info:', err);
-    }
-  };
 
   // API Functions
   const loadWorkRecords = async () => {
@@ -187,15 +157,14 @@ const InternDailyRecords = () => {
           ...existingRecord,
           department: existingRecord.department,
           status: existingRecord.status,
-          hoursWorked: existingRecord.hoursWorked.toString(),
-          supervisor: existingRecord.supervisor || supervisorName // Use existing or default to fetched supervisor
+          hoursWorked: existingRecord.hoursWorked.toString()
         });
       } else {
         setCurrentRecord({
           tasks: '',
           hoursWorked: '',
-          department: 'DIGITAL PLATFORM',
-          supervisor: supervisorName, // Auto-fill with supervisor name
+          department: 'GENERAL',
+          supervisor: '',
           achievements: '',
           challenges: '',
           learnings: '',
@@ -210,8 +179,8 @@ const InternDailyRecords = () => {
       setCurrentRecord({
         tasks: '',
         hoursWorked: '',
-        department: 'DIGITAL PLATFORM',
-        supervisor: supervisorName, // Auto-fill with supervisor name
+        department: 'GENERAL',
+        supervisor: '',
         achievements: '',
         challenges: '',
         learnings: '',
@@ -276,8 +245,8 @@ const InternDailyRecords = () => {
       setCurrentRecord({
         tasks: '',
         hoursWorked: '',
-        department: 'DIGITAL PLATFORM',
-        supervisor: supervisorName, // Keep supervisor name for next entry
+        department: 'GENERAL',
+        supervisor: '',
         achievements: '',
         challenges: '',
         learnings: '',
@@ -504,19 +473,9 @@ const InternDailyRecords = () => {
               type="text"
               value={currentRecord.supervisor}
               onChange={(e) => setCurrentRecord(prev => ({ ...prev, supervisor: e.target.value }))}
-              disabled={!!supervisorName}
-              className={`w-full px-4 py-3 border rounded-lg text-lg ${
-                supervisorName 
-                  ? 'bg-gray-100 border-gray-300 text-gray-600 cursor-not-allowed' 
-                  : 'border-[#D1D5DB] focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent'
-              }`}
-              placeholder={supervisorName ? "Supervisor auto-assigned" : "Enter supervisor name"}
+              className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg"
+              placeholder="Enter supervisor name"
             />
-            {supervisorName && (
-              <p className="text-xs text-[#6B7280] mt-1">
-                Supervisor is automatically assigned and cannot be changed
-              </p>
-            )}
           </div>
 
           <div>
