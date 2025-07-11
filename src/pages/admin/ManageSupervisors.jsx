@@ -9,6 +9,7 @@ import { IoSearch } from "react-icons/io5";
 const ManageSupervisors = () => {
   const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingSupervisor, setEditingSupervisor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSupervisors, setFilteredSupervisors] = useState([]);
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
@@ -114,6 +115,50 @@ const ManageSupervisors = () => {
     return <FaSortAlphaDown className="inline ml-1 opacity-30" />;
   };
 
+  const handleEdit = (supervisor) => {
+    setEditingSupervisor({...supervisor});
+  };
+
+  const handleSave = async () => {
+    try {
+      const token = getToken();
+      await axios.put(`http://localhost:8080/admin/supervisors/${editingSupervisor.supervisorId}`, editingSupervisor, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      setEditingSupervisor(null);
+      fetchSupervisors();
+    } catch (error) {
+      console.error('Error updating supervisor:', error);
+      alert('Error updating supervisor');
+    }
+  };
+
+  const handleDelete = async (supervisorId) => {
+    if (window.confirm('Are you sure you want to deactivate this supervisor?')) {
+      try {
+        const token = getToken();
+        // Find the supervisor to update their status
+        const supervisorToUpdate = supervisors.find(supervisor => supervisor.supervisorId === supervisorId);
+        if (supervisorToUpdate) {
+          const updatedSupervisor = { ...supervisorToUpdate, state: 0 }; // Set status to Inactive
+          await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}`, updatedSupervisor, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          fetchSupervisors();
+        }
+      } catch (error) {
+        console.error('Error updating supervisor status:', error);
+        alert('Error updating supervisor status');
+      }
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusMap = {
       0: { text: 'Inactive', color: 'bg-[#FEF2F2] text-[#991B1B]' },
@@ -203,11 +248,66 @@ const ManageSupervisors = () => {
             {filteredSupervisors.map((supervisor) => (
               <tr key={supervisor.supervisorId}>
                 <td>{`S${String(supervisor.supervisorId).padStart(6, '0')}`}</td>
-                <td>{supervisor.name}</td>
-                <td>{supervisor.email}</td>
-                <td>{supervisor.mobileNumber}</td>
-                <td>{supervisor.specialization}</td>
-                <td>{getStatusBadge(supervisor.state)}</td>
+                <td>
+                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    <Input
+                      size="sm"
+                      value={editingSupervisor.name}
+                      onChange={(e) => setEditingSupervisor({...editingSupervisor, name: e.target.value})}
+                    />
+                  ) : (
+                    supervisor.name
+                  )}
+                </td>
+                <td>
+                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    <Input
+                      size="sm"
+                      type="email"
+                      value={editingSupervisor.email}
+                      onChange={(e) => setEditingSupervisor({...editingSupervisor, email: e.target.value})}
+                    />
+                  ) : (
+                    supervisor.email
+                  )}
+                </td>
+                <td>
+                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    <Input
+                      size="sm"
+                      value={editingSupervisor.mobileNumber}
+                      onChange={(e) => setEditingSupervisor({...editingSupervisor, mobileNumber: e.target.value})}
+                    />
+                  ) : (
+                    supervisor.mobileNumber
+                  )}
+                </td>
+                <td>
+                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    <Input
+                      size="sm"
+                      value={editingSupervisor.specialization}
+                      onChange={(e) => setEditingSupervisor({...editingSupervisor, specialization: e.target.value})}
+                    />
+                  ) : (
+                    supervisor.specialization
+                  )}
+                </td>
+                <td>
+                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    <Select
+                      size="sm"
+                      selectedKeys={[editingSupervisor.state?.toString()]}
+                      onSelectionChange={(keys) => setEditingSupervisor({...editingSupervisor, state: parseInt(Array.from(keys)[0])})}
+                    >
+                      <SelectItem key="0" value="0">Inactive</SelectItem>
+                      <SelectItem key="1" value="1">Active</SelectItem>
+                      <SelectItem key="2" value="2">On Leave</SelectItem>
+                    </Select>
+                  ) : (
+                    getStatusBadge(supervisor.state)
+                  )}
+                </td>
                 <td>
                   <div className="relative flex items-center gap-2">
                     <Tooltip content="Details">
@@ -215,16 +315,33 @@ const ManageSupervisors = () => {
                         <FaEye />
                       </span>
                     </Tooltip>
-                    <Tooltip content="Edit">
-                      <span className="text-lg text-[#2563EB] cursor-pointer active:opacity-50">
-                        <FaPen />
-                      </span>
-                    </Tooltip>
-                    <Tooltip content="Deactivate">
-                      <span className="text-lg text-[#DC2626] cursor-pointer active:opacity-50">
-                        <FaTrash />
-                      </span>
-                    </Tooltip>
+                    {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                      <>
+                        <Tooltip content="Save">
+                          <span className="text-lg text-[#16A34A] cursor-pointer active:opacity-50">
+                            <FaSave onClick={handleSave} />
+                          </span>
+                        </Tooltip>
+                        <Tooltip content="Cancel">
+                          <span className="text-lg text-[#4B5563] cursor-pointer active:opacity-50">
+                            <FaTimes onClick={() => setEditingSupervisor(null)} />
+                          </span>
+                        </Tooltip>
+                      </>
+                    ) : (
+                      <>
+                        <Tooltip content="Edit">
+                          <span className="text-lg text-[#2563EB] cursor-pointer active:opacity-50">
+                            <FaPen onClick={() => handleEdit(supervisor)} />
+                          </span>
+                        </Tooltip>
+                        <Tooltip content="Deactivate">
+                          <span className="text-lg text-[#DC2626] cursor-pointer active:opacity-50">
+                            <FaTrash onClick={() => handleDelete(supervisor.supervisorId)} />
+                          </span>
+                        </Tooltip>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
