@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getToken } from '../authentication/Auth';
 import "../../Table.css";
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Select, SelectItem, Tooltip } from "@nextui-org/react";
-import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye, FaPen } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye, FaSortAlphaDown, FaSortAlphaUp, FaPen } from 'react-icons/fa';
 import { IoSearch } from "react-icons/io5";
 
 const ManageSupervisors = () => {
@@ -11,6 +11,9 @@ const ManageSupervisors = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSupervisors, setFilteredSupervisors] = useState([]);
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [sortedSupervisors, setSortedSupervisors] = useState([]);
+  const [sortBy, setSortBy] = useState('name'); // field to sort by
 
   useEffect(() => {
     fetchSupervisors();
@@ -18,7 +21,52 @@ const ManageSupervisors = () => {
 
   useEffect(() => {
     if (supervisors.length > 0) {
-      const filtered = supervisors.filter(supervisor => {
+      const sorted = [...supervisors].sort((a, b) => {
+        let aValue, bValue;
+        
+        switch (sortBy) {
+          case 'id':
+            aValue = a.supervisorId || 0;
+            bValue = b.supervisorId || 0;
+            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          case 'name':
+            aValue = a.name || '';
+            bValue = b.name || '';
+            break;
+          case 'email':
+            aValue = a.email || '';
+            bValue = b.email || '';
+            break;
+          case 'mobile':
+            aValue = a.mobileNumber || '';
+            bValue = b.mobileNumber || '';
+            break;
+          case 'specialization':
+            aValue = a.specialization || '';
+            bValue = b.specialization || '';
+            break;
+          case 'status':
+            aValue = a.state || 0;
+            bValue = b.state || 0;
+            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+          default:
+            aValue = a.name || '';
+            bValue = b.name || '';
+        }
+        
+        if (sortOrder === 'asc') {
+          return aValue.toString().localeCompare(bValue.toString());
+        } else {
+          return bValue.toString().localeCompare(aValue.toString());
+        }
+      });
+      setSortedSupervisors(sorted);
+    }
+  }, [supervisors, sortOrder, sortBy]);
+
+  useEffect(() => {
+    if (sortedSupervisors.length > 0) {
+      const filtered = sortedSupervisors.filter(supervisor => {
         const searchLower = searchTerm.toLowerCase();
         return (
           supervisor.name?.toLowerCase().includes(searchLower) ||
@@ -32,7 +80,7 @@ const ManageSupervisors = () => {
     } else {
       setFilteredSupervisors([]);
     }
-  }, [supervisors, searchTerm]);
+  }, [sortedSupervisors, searchTerm]);
 
   const fetchSupervisors = async () => {
     try {
@@ -48,6 +96,22 @@ const ManageSupervisors = () => {
       console.error('Error fetching supervisors:', error);
       setLoading(false);
     }
+  };
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (field) => {
+    if (sortBy === field) {
+      return sortOrder === 'asc' ? <FaSortAlphaDown className="inline ml-1" /> : <FaSortAlphaUp className="inline ml-1" />;
+    }
+    return <FaSortAlphaDown className="inline ml-1 opacity-30" />;
   };
 
   const getStatusBadge = (status) => {
@@ -96,12 +160,42 @@ const ManageSupervisors = () => {
         <table>
           <thead className="text-sm font-thin">
             <tr className='text-xs text-[#6B7280]'>
-              <th>Supervisor ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Mobile</th>
-              <th>Specialization</th>
-              <th>Status</th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('id')}
+              >
+                Supervisor ID {getSortIcon('id')}
+              </th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('name')}
+              >
+                Name {getSortIcon('name')}
+              </th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('email')}
+              >
+                Email {getSortIcon('email')}
+              </th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('mobile')}
+              >
+                Mobile {getSortIcon('mobile')}
+              </th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('specialization')}
+              >
+                Specialization {getSortIcon('specialization')}
+              </th>
+              <th 
+                className="cursor-pointer hover:text-[#2563EB] select-none"
+                onClick={() => handleSort('status')}
+              >
+                Status {getSortIcon('status')}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
