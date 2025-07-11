@@ -10,11 +10,20 @@ const ManageSupervisors = () => {
   const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingSupervisor, setEditingSupervisor] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredSupervisors, setFilteredSupervisors] = useState([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedSupervisor, setSelectedSupervisor] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
   const [sortedSupervisors, setSortedSupervisors] = useState([]);
   const [sortBy, setSortBy] = useState('name'); // field to sort by
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredSupervisors, setFilteredSupervisors] = useState([]);
+  const [newSupervisor, setNewSupervisor] = useState({
+    name: '',
+    mobileNumber: '',
+    email: '',
+    specialization: ''
+  });
 
   useEffect(() => {
     fetchSupervisors();
@@ -159,6 +168,54 @@ const ManageSupervisors = () => {
     }
   };
 
+  const handleStatusChange = async (supervisorId, newStatus) => {
+    try {
+      const token = getToken();
+      await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}/status?status=${newStatus}`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      fetchSupervisors();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status');
+    }
+  };
+
+  const handleAddSupervisor = async () => {
+    try {
+      const token = getToken();
+      await axios.post('http://localhost:8080/admin/supervisors', newSupervisor, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      setShowAddForm(false);
+      setNewSupervisor({
+        name: '',
+        mobileNumber: '',
+        email: '',
+        specialization: ''
+      });
+      fetchSupervisors();
+    } catch (error) {
+      console.error('Error adding supervisor:', error);
+      alert('Error adding supervisor');
+    }
+  };
+
+  const handleViewClick = (supervisor) => {
+    setSelectedSupervisor(supervisor);
+    setIsViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedSupervisor(null);
+  };
+
   const getStatusBadge = (status) => {
     const statusMap = {
       0: { text: 'Inactive', color: 'bg-[#FEF2F2] text-[#991B1B]' },
@@ -195,7 +252,9 @@ const ManageSupervisors = () => {
         />
         <Button
           className="bg-[#52b74d] hover:bg-[#1D4ED8] text-white"
+          onPress={() => setShowAddForm(true)}
           startContent={<FaPlus />}
+          
         >
           Add New Supervisor
         </Button>
@@ -312,7 +371,7 @@ const ManageSupervisors = () => {
                   <div className="relative flex items-center gap-2">
                     <Tooltip content="Details">
                       <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                        <FaEye />
+                        <FaEye onClick={() => handleViewClick(supervisor)} />
                       </span>
                     </Tooltip>
                     {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
@@ -349,6 +408,138 @@ const ManageSupervisors = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Add Supervisor Modal */}
+      <Modal
+        isOpen={showAddForm}
+        onClose={() => setShowAddForm(false)}
+        size="2xl"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1 text-blue">
+            Add New Supervisor
+          </ModalHeader>
+          <ModalBody>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Name"
+                placeholder="Enter supervisor name"
+                value={newSupervisor.name}
+                onChange={(e) => setNewSupervisor({...newSupervisor, name: e.target.value})}
+              />
+              <Input
+                label="Mobile Number"
+                placeholder="Enter mobile number"
+                value={newSupervisor.mobileNumber}
+                onChange={(e) => setNewSupervisor({...newSupervisor, mobileNumber: e.target.value})}
+              />
+              <Input
+                label="Email"
+                type="email"
+                placeholder="Enter email address"
+                value={newSupervisor.email}
+                onChange={(e) => setNewSupervisor({...newSupervisor, email: e.target.value})}
+              />
+              <Input
+                label="Specialization"
+                placeholder="Enter specialization"
+                value={newSupervisor.specialization}
+                onChange={(e) => setNewSupervisor({...newSupervisor, specialization: e.target.value})}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              variant="bordered"
+              onPress={() => setShowAddForm(false)}
+              startContent={<FaTimes />}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="primary"
+              onPress={handleAddSupervisor}
+              startContent={<FaSave />}
+            >
+              Save
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* View Supervisor Details Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={handleCloseViewModal}
+        scrollBehavior="inside"
+        size="4xl"
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1 text-blue">
+            {selectedSupervisor ? `${`S${String(selectedSupervisor.supervisorId).padStart(6, '0')}`} - ${selectedSupervisor.name}` : "Supervisor Details"}
+          </ModalHeader>
+          <ModalBody>
+            {selectedSupervisor ? (
+              <div>
+                <h1 className='pb-4 font-semibold'>Supervisor Information</h1>
+                <div className='grid grid-cols-2 gap-y-5 gap-x-7 m-auto'>
+                  <Input 
+                    isDisabled 
+                    label="Supervisor ID" 
+                    labelPlacement="outside" 
+                    value={`S${String(selectedSupervisor.supervisorId).padStart(6, '0')}`} 
+                    type="text" 
+                  />
+                  <Input 
+                    isDisabled 
+                    label="Name" 
+                    labelPlacement="outside" 
+                    value={selectedSupervisor.name} 
+                    type="text" 
+                  />
+                  <Input 
+                    isDisabled 
+                    label="Email Address" 
+                    labelPlacement="outside" 
+                    value={selectedSupervisor.email} 
+                    type="text" 
+                  />
+                  <Input 
+                    isDisabled 
+                    label="Mobile Number" 
+                    labelPlacement="outside" 
+                    value={selectedSupervisor.mobileNumber} 
+                    type="text" 
+                  />
+                  <Input 
+                    isDisabled 
+                    label="Specialization" 
+                    labelPlacement="outside" 
+                    value={selectedSupervisor.specialization} 
+                    type="text" 
+                  />
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">Status</label>
+                    {getStatusBadge(selectedSupervisor.state)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[#6B7280] text-center">No details available</p>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button 
+              className='text-red font-bold border-red' 
+              variant="bordered" 
+              onPress={handleCloseViewModal}
+            >
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };
