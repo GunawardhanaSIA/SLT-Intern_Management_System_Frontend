@@ -11,11 +11,31 @@ const ManageInterns = () => {
   const [interns, setInterns] = useState([]);
   const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredInterns, setFilteredInterns] = useState([]);
 
   useEffect(() => {
     fetchInterns();
     fetchSupervisors();
   }, []);
+
+  useEffect(() => {
+    if (interns.length > 0) {
+      const filtered = interns.filter(intern => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          intern.name?.toLowerCase().includes(searchLower) ||
+          intern.email?.toLowerCase().includes(searchLower) ||
+          intern.supervisor?.name?.toLowerCase().includes(searchLower) ||
+          intern.specialization?.toLowerCase().includes(searchLower) ||
+          `I${String(intern.internId).padStart(6, '0')}`.toLowerCase().includes(searchLower)
+        );
+      });
+      setFilteredInterns(filtered);
+    } else {
+      setFilteredInterns([]);
+    }
+  }, [interns, searchTerm]);
 
   const fetchInterns = async () => {
     try {
@@ -72,6 +92,18 @@ const ManageInterns = () => {
 
   return (
     <div className="mx-6 mt-6">
+      <div className="flex justify-between items-center mb-6">
+        <Input
+          size="lg"
+          placeholder="Search interns by name, email, supervisor, specialization, or ID..."
+          startContent={<IoSearch className="text-[#6B7280]" />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+          clearable
+        />
+      </div>
+
       <div className="table_component mt-4" role="region" tabIndex="0">
         <table>
           <thead className="text-sm font-thin">
@@ -86,7 +118,7 @@ const ManageInterns = () => {
             </tr>
           </thead>
           <tbody className="text-xs align-top">
-            {interns.map((intern) => (
+            {filteredInterns.map((intern) => (
               <tr key={intern.internId}>
                 <td>{`I${String(intern.internId).padStart(6, '0')}`}</td>
                 <td>{intern.name}</td>
