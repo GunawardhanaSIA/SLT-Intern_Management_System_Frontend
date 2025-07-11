@@ -9,10 +9,30 @@ import { IoSearch } from "react-icons/io5";
 const ManageSupervisors = () => {
   const [supervisors, setSupervisors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredSupervisors, setFilteredSupervisors] = useState([]);
 
   useEffect(() => {
     fetchSupervisors();
   }, []);
+
+  useEffect(() => {
+    if (supervisors.length > 0) {
+      const filtered = supervisors.filter(supervisor => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          supervisor.name?.toLowerCase().includes(searchLower) ||
+          supervisor.email?.toLowerCase().includes(searchLower) ||
+          supervisor.mobileNumber?.toString().toLowerCase().includes(searchLower) ||
+          supervisor.specialization?.toLowerCase().includes(searchLower) ||
+          `S${String(supervisor.supervisorId).padStart(6, '0')}`.toLowerCase().includes(searchLower)
+        );
+      });
+      setFilteredSupervisors(filtered);
+    } else {
+      setFilteredSupervisors([]);
+    }
+  }, [supervisors, searchTerm]);
 
   const fetchSupervisors = async () => {
     try {
@@ -54,6 +74,24 @@ const ManageSupervisors = () => {
 
   return (
     <div className="mx-6 mt-6">
+      <div className="flex justify-between items-center mb-6">
+        <Input
+          size="lg"
+          placeholder="Search supervisors by name, email, mobile, specialization, or ID..."
+          startContent={<IoSearch className="text-[#6B7280]" />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-md"
+          clearable
+        />
+        <Button
+          className="bg-[#52b74d] hover:bg-[#1D4ED8] text-white"
+          startContent={<FaPlus />}
+        >
+          Add New Supervisor
+        </Button>
+      </div>
+
       <div className="table_component mt-4" role="region" tabIndex="0">
         <table>
           <thead className="text-sm font-thin">
@@ -68,7 +106,7 @@ const ManageSupervisors = () => {
             </tr>
           </thead>
           <tbody className="text-xs align-top">
-            {supervisors.map((supervisor) => (
+            {filteredSupervisors.map((supervisor) => (
               <tr key={supervisor.supervisorId}>
                 <td>{`S${String(supervisor.supervisorId).padStart(6, '0')}`}</td>
                 <td>{supervisor.name}</td>
