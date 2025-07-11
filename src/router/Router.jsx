@@ -19,6 +19,9 @@ import Admin from "../layout/Admin"
 import AdminDashboard from "../pages/admin/AdminDashboard"
 import UpcomingInterviews from "../pages/admin/UpcomingInterviews"
 import NewApplications from "../pages/admin/NewApplications"
+import ManageInterns from "../pages/admin/ManageInterns"
+import ManageSupervisors from "../pages/admin/ManageSupervisors"
+import Reports from "../pages/admin/Reports"
 import DailyUpdates from "../pages/intern/DailyUpdates"
 
 //Security
@@ -125,6 +128,18 @@ const router = createBrowserRouter([
             {
                 path: "/admin/upcoming-interviews",
                 element: <UpcomingInterviews/>
+            },
+            {
+                path: "/admin/manage-interns", 
+                element: <ManageInterns/>
+            },
+            {
+                path: "/admin/manage-supervisors",
+                element: <ManageSupervisors/>
+            },
+            {
+                path: "/admin/reports",
+                element: <Reports/>
             },
         ]
     },
