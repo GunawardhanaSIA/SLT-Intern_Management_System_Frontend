@@ -106,6 +106,54 @@ function Reports() {
     );
   }
 
+  // Prepare chart data
+  const pieChartData = reportData.internStatusDistribution ? 
+    Object.entries(reportData.internStatusDistribution).map(([status, count]) => {
+      const colors = {
+        'Active': '#10B981',
+        'Completed': '#3B82F6', 
+        'Dropped': '#EF4444',
+        'Suspended': '#F59E0B'
+      };
+      return { name: status, value: count || 0, color: colors[status] || '#6B7280' };
+    }) :
+    [
+      { name: 'Active', value: reportData.activeInterns || 0, color: '#10B981' },
+      { name: 'Completed', value: reportData.completedInterns || 0, color: '#3B82F6' },
+      { name: 'Dropped', value: reportData.droppedInterns || 0, color: '#EF4444' },
+      { name: 'Suspended', value: reportData.suspendedInterns || 0, color: '#F59E0B' }
+    ];
+
+  const monthlyData = Object.entries(reportData.monthlyRegistrations || {}).map(([month, count]) => ({
+    month: month.split('-')[1] || month,
+    registrations: count || 0
+  }));
+
+  const specializationData = Object.entries(reportData.specializationDistribution || {}).map(([spec, count]) => ({
+    specialization: spec,
+    count: count || 0
+  }));
+
+  const supervisorStatusData = reportData.supervisorStatusDistribution ? 
+    Object.entries(reportData.supervisorStatusDistribution).map(([status, count]) => {
+      const colors = {
+        'Active': '#10B981',
+        'Inactive': '#EF4444',
+        'On Leave': '#F59E0B'
+      };
+      return { name: status, value: count || 0, color: colors[status] || '#6B7280' };
+    }) :
+    [
+      { name: 'Active', value: reportData.activeSupervisors || 0, color: '#10B981' },
+      { name: 'Inactive', value: reportData.inactiveSupervisors || 0, color: '#EF4444' },
+      { name: 'On Leave', value: reportData.onLeaveSupervisors || 0, color: '#F59E0B' }
+    ];
+
+  const projectTechData = Object.entries(reportData.projectsByTechnology || {}).map(([tech, count]) => ({
+    technology: tech,
+    count: count || 0
+  }));
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -219,10 +267,237 @@ function Reports() {
         </Card>
       </div>
 
-      {/* Placeholder for charts */}
-      <div className="text-center py-8">
-        <p className="text-gray-500">Charts will be added in the next commits</p>
+      {/* Charts Row 1 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Intern Status Distribution */}
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => openChartModal('pie', pieChartData, 'Intern Status Distribution')}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5 text-blue-500" />
+              <h3 className="text-lg font-semibold">Intern Status Distribution</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="h-64">
+              {pieChartData.some(item => item.value > 0) ? (
+                <MUIPieChart
+                  series={[{
+                    data: pieChartData.map((item, index) => ({
+                      id: index,
+                      value: item.value,
+                      label: item.name,
+                      color: item.color
+                    }))
+                  }]}
+                  width={400}
+                  height={250}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No data available</p>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Monthly Registration Trend */}
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => openChartModal('line', monthlyData, 'Monthly Registration Trend')}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              <h3 className="text-lg font-semibold">Monthly Registration Trend</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="h-64">
+              {monthlyData.length > 0 ? (
+                <MUILineChart
+                  xAxis={[{ 
+                    scaleType: 'point', 
+                    data: monthlyData.map(d => d.month) 
+                  }]}
+                  series={[{ 
+                    data: monthlyData.map(d => d.registrations), 
+                    label: 'Registrations',
+                    color: '#10B981'
+                  }]}
+                  width={400}
+                  height={250}
+                  sx={{
+                    [`& .${lineElementClasses.root}`]: {
+                      strokeWidth: 3,
+                    },
+                    [`& .${markElementClasses.root}`]: {
+                      strokeWidth: 2,
+                    },
+                  }}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No registration data available</p>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
       </div>
+
+      {/* Charts Row 2 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Specialization Distribution */}
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => openChartModal('bar', specializationData, 'Specialization Distribution')}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-purple-500" />
+              <h3 className="text-lg font-semibold">Specialization Distribution</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="h-64">
+              {specializationData.length > 0 ? (
+                <MUIBarChart
+                  xAxis={[{ 
+                    scaleType: 'band', 
+                    data: specializationData.map(d => d.specialization) 
+                  }]}
+                  series={[{ 
+                    data: specializationData.map(d => d.count), 
+                    label: 'Count',
+                    color: '#8B5CF6'
+                  }]}
+                  width={400}
+                  height={250}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No specialization data available</p>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Supervisor Status Distribution */}
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => openChartModal('pie', supervisorStatusData, 'Supervisor Status Distribution')}>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-blue-500" />
+              <h3 className="text-lg font-semibold">Supervisor Status Distribution</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="h-64">
+              {supervisorStatusData.some(item => item.value > 0) ? (
+                <MUIPieChart
+                  series={[{
+                    data: supervisorStatusData.map((item, index) => ({
+                      id: index,
+                      value: item.value,
+                      label: item.name,
+                      color: item.color
+                    }))
+                  }]}
+                  width={400}
+                  height={250}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p>No supervisor data available</p>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Chart Modal */}
+      <Modal 
+        isOpen={isOpen} 
+        onOpenChange={onOpenChange}
+        size="3xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                <h3 className="text-lg font-semibold">
+                  {selectedChart?.title || 'Chart Details'}
+                </h3>
+              </ModalHeader>
+              <ModalBody>
+                <div className="h-96 flex justify-center">
+                  {selectedChart?.type === 'pie' && selectedChart?.data?.some(item => item.value > 0) && (
+                    <MUIPieChart
+                      series={[{
+                        data: selectedChart.data.map((item, index) => ({
+                          id: index,
+                          value: item.value,
+                          label: item.name,
+                          color: item.color
+                        }))
+                      }]}
+                      width={600}
+                      height={400}
+                    />
+                  )}
+                  {selectedChart?.type === 'pie' && !selectedChart?.data?.some(item => item.value > 0) && (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p>No data available for this chart</p>
+                    </div>
+                  )}
+                  {selectedChart?.type === 'line' && selectedChart?.data?.length > 0 && (
+                    <MUILineChart
+                      xAxis={[{ 
+                        scaleType: 'point', 
+                        data: selectedChart.data.map(d => d.month) 
+                      }]}
+                      series={[{ 
+                        data: selectedChart.data.map(d => d.registrations), 
+                        label: 'Registrations',
+                        color: '#10B981'
+                      }]}
+                      width={600}
+                      height={400}
+                    />
+                  )}
+                  {selectedChart?.type === 'line' && (!selectedChart?.data || selectedChart.data.length === 0) && (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p>No registration data available</p>
+                    </div>
+                  )}
+                  {selectedChart?.type === 'bar' && selectedChart?.data?.length > 0 && (
+                    <MUIBarChart
+                      xAxis={[{ 
+                        scaleType: 'band', 
+                        data: selectedChart.data.map(d => d.specialization || d.department || d.technology || 'Unknown') 
+                      }]}
+                      series={[{ 
+                        data: selectedChart.data.map(d => d.count || 0), 
+                        label: 'Count',
+                        color: '#8B5CF6'
+                      }]}
+                      width={600}
+                      height={400}
+                    />
+                  )}
+                  {selectedChart?.type === 'bar' && (!selectedChart?.data || selectedChart.data.length === 0) && (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      <p>No data available for this chart</p>
+                    </div>
+                  )}
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
