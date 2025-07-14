@@ -411,6 +411,85 @@ function Reports() {
         </Card>
       </div>
 
+      {/* Top Performers */}
+      {reportData.topPerformers && reportData.topPerformers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-yellow-500" />
+              <h3 className="text-lg font-semibold">Top Performers</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {reportData.topPerformers.slice(0, 6).map((performer, index) => (
+                <div key={index} className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-gray-800">{performer.name}</h4>
+                    <Chip 
+                      size="sm" 
+                      color={index < 3 ? "warning" : "primary"} 
+                      variant="flat"
+                    >
+                      #{index + 1}
+                    </Chip>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{performer.specialization}</p>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Performance Score:</span>
+                      <span className="font-medium">{performer.performanceScore?.toFixed(1) || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Total Hours:</span>
+                      <span className="font-medium">{performer.totalHours?.toFixed(1) || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Attendance:</span>
+                      <span className="font-medium">{performer.attendanceRate?.toFixed(1) || 'N/A'}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Recent Activities */}
+      {reportData.recentActivities && reportData.recentActivities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-blue-500" />
+              <h3 className="text-lg font-semibold">Recent Activities</h3>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="space-y-3">
+              {reportData.recentActivities.slice(0, 8).map((activity, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activity.type === 'New Intern' ? 'bg-green-500' : 'bg-blue-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-800">{activity.description}</p>
+                    <p className="text-xs text-gray-500">{activity.date}</p>
+                  </div>
+                  <Chip 
+                    size="sm" 
+                    color={activity.type === 'New Intern' ? 'success' : 'primary'} 
+                    variant="flat"
+                  >
+                    {activity.type}
+                  </Chip>
+                </div>
+              ))}
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
       {/* Chart Modal */}
       <Modal 
         isOpen={isOpen} 
