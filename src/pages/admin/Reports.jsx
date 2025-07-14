@@ -126,9 +126,102 @@ function Reports() {
         />
       </div>
 
-      {/* Placeholder for future content */}
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-l-4 border-l-blue-500">
+          <CardBody className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Interns</p>
+                <p className="text-2xl font-bold text-blue-600">{reportData.totalInterns || 0}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-500" />
+            </div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <Chip size="sm" color="success" variant="flat">
+                {reportData.activeInterns || 0} Active
+              </Chip>
+              <Chip size="sm" color="primary" variant="flat">
+                {reportData.completedInterns || 0} Completed
+              </Chip>
+              <Chip size="sm" color="danger" variant="flat">
+                {reportData.droppedInterns || 0} Dropped
+              </Chip>
+              <Chip size="sm" color="warning" variant="flat">
+                {reportData.suspendedInterns || 0} Suspended
+              </Chip>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="border-l-4 border-l-green-500">
+          <CardBody className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Projects</p>
+                <p className="text-2xl font-bold text-green-600">{reportData.totalProjects || 0}</p>
+              </div>
+              <Target className="h-8 w-8 text-green-500" />
+            </div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <Chip size="sm" color="success" variant="flat">
+                {reportData.activeProjects || 0} Active
+              </Chip>
+              <Chip size="sm" color="primary" variant="flat">
+                {reportData.completedProjects || 0} Completed
+              </Chip>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardBody className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Supervisors</p>
+                <p className="text-2xl font-bold text-purple-600">{reportData.totalSupervisors || 0}</p>
+              </div>
+              <UserCheck className="h-8 w-8 text-purple-500" />
+            </div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <Chip size="sm" color="success" variant="flat">
+                {reportData.activeSupervisors || 0} Active
+              </Chip>
+              <Chip size="sm" color="danger" variant="flat">
+                {reportData.inactiveSupervisors || 0} Inactive
+              </Chip>
+              <Chip size="sm" color="warning" variant="flat">
+                {reportData.onLeaveSupervisors || 0} On Leave
+              </Chip>
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="border-l-4 border-l-orange-500">
+          <CardBody className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Completion Rate</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {(reportData.totalInterns && reportData.totalInterns > 0) 
+                    ? Math.round(((reportData.completedInterns || 0) / reportData.totalInterns) * 100) 
+                    : 0}%
+                </p>
+              </div>
+              <Award className="h-8 w-8 text-orange-500" />
+            </div>
+            <div className="mt-2">
+              <Chip size="sm" color="warning" variant="flat">
+                {reportData.completedInterns || 0} Completed
+              </Chip>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Placeholder for charts */}
       <div className="text-center py-8">
-        <p className="text-gray-500">Charts and overview cards will be added in the next commits</p>
+        <p className="text-gray-500">Charts will be added in the next commits</p>
       </div>
     </div>
   );
