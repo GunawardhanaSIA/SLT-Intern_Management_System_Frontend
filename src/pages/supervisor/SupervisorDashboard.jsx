@@ -322,7 +322,7 @@ const SupervisorDashboard = () => {
   return (
     <div className='m-6'>
       <div className='flex justify-between'>
-        <h1 className='text-xl text-blue'>Total Number of Projects : 5</h1>
+        <h1 className='text-xl text-blue'>Total Number of Projects : {projects.length}</h1>
         <Button className='bg-blue font-bold text-white' onClick={() => handleOpenModal()}>Create New Project</Button>
       </div>
 

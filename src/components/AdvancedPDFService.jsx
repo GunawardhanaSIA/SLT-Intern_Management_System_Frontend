@@ -416,19 +416,19 @@ class AdvancedPDFService {
     const overviewData = [
       ['Metric', 'Count', 'Percentage'],
       ['Total Interns', reportData.totalInterns || 0, '100%'],
-      ['Active Interns', reportData.activeInterns || 0, ((reportData.activeInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1) + '%'],
-      ['Completed Interns', reportData.completedInterns || 0, ((reportData.completedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1) + '%'],
-      ['Dropped Interns', reportData.droppedInterns || 0, ((reportData.droppedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1) + '%'],
-      ['Suspended Interns', reportData.suspendedInterns || 0, ((reportData.suspendedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1) + '%'],
+      ['Active Interns', reportData.activeInterns || 0, `${((reportData.activeInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1)}%`],
+      ['Completed Interns', reportData.completedInterns || 0, `${((reportData.completedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1)}%`],
+      ['Dropped Interns', reportData.droppedInterns || 0, `${((reportData.droppedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1)}%`],
+      ['Suspended Interns', reportData.suspendedInterns || 0, `${((reportData.suspendedInterns || 0) / (reportData.totalInterns || 1) * 100).toFixed(1)}%`],
       [],
       ['Total Projects', reportData.totalProjects || 0, '100%'],
-      ['Active Projects', reportData.activeProjects || 0, ((reportData.activeProjects || 0) / (reportData.totalProjects || 1) * 100).toFixed(1) + '%'],
-      ['Completed Projects', reportData.completedProjects || 0, ((reportData.completedProjects || 0) / (reportData.totalProjects || 1) * 100).toFixed(1) + '%'],
+      ['Active Projects', reportData.activeProjects || 0, `${((reportData.activeProjects || 0) / (reportData.totalProjects || 1) * 100).toFixed(1)}%`],
+      ['Completed Projects', reportData.completedProjects || 0, `${((reportData.completedProjects || 0) / (reportData.totalProjects || 1) * 100).toFixed(1)}%`],
       [],
       ['Total Supervisors', reportData.totalSupervisors || 0, '100%'],
-      ['Active Supervisors', reportData.activeSupervisors || 0, ((reportData.activeSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1) + '%'],
-      ['Inactive Supervisors', reportData.inactiveSupervisors || 0, ((reportData.inactiveSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1) + '%'],
-      ['On Leave Supervisors', reportData.onLeaveSupervisors || 0, ((reportData.onLeaveSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1) + '%']
+      ['Active Supervisors', reportData.activeSupervisors || 0, `${((reportData.activeSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1)}%`],
+      ['Inactive Supervisors', reportData.inactiveSupervisors || 0, `${((reportData.inactiveSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1)}%`],
+      ['On Leave Supervisors', reportData.onLeaveSupervisors || 0, `${((reportData.onLeaveSupervisors || 0) / (reportData.totalSupervisors || 1) * 100).toFixed(1)}%`]
     ];
     
     if (this.hasAutoTable && typeof this.doc.autoTable === 'function') {
@@ -464,7 +464,7 @@ class AdvancedPDFService {
       this.currentY += 10;
       
       const internStatusData = Object.entries(reportData.internStatusDistribution).map(([status, count]) => [
-        status, count, ((count / (reportData.totalInterns || 1)) * 100).toFixed(1) + '%'
+        status, count, `${((count / (reportData.totalInterns || 1)) * 100).toFixed(1)}%`
       ]);
       
       if (this.hasAutoTable && typeof this.doc.autoTable === 'function') {
@@ -491,7 +491,7 @@ class AdvancedPDFService {
       this.currentY += 10;
       
       const supervisorStatusData = Object.entries(reportData.supervisorStatusDistribution).map(([status, count]) => [
-        status, count, ((count / (reportData.totalSupervisors || 1)) * 100).toFixed(1) + '%'
+        status, count, `${((count / (reportData.totalSupervisors || 1)) * 100).toFixed(1)}%`
       ]);
       
       if (this.hasAutoTable && typeof this.doc.autoTable === 'function') {

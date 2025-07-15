@@ -323,18 +323,18 @@ function ReportExportModal({ reportData, onExport }) {
       let csv = 'SLT Intern Management System Report\\n\\n';
       csv += 'OVERVIEW STATISTICS\\n';
       csv += 'Metric,Value\\n';
-      csv += `Total Interns,${reportData.totalInterns || 0}\n`;
-      csv += `Active Interns,${reportData.activeInterns || 0}\n`;
-      csv += `Completed Interns,${reportData.completedInterns || 0}\n`;
-      csv += `Dropped Interns,${reportData.droppedInterns || 0}\n`;
-      csv += `Suspended Interns,${reportData.suspendedInterns || 0}\n`;
-      csv += `Total Projects,${reportData.totalProjects || 0}\n`;
-      csv += `Active Projects,${reportData.activeProjects || 0}\n`;
-      csv += `Completed Projects,${reportData.completedProjects || 0}\n`;
-      csv += `Total Supervisors,${reportData.totalSupervisors || 0}\n`;
-      csv += `Active Supervisors,${reportData.activeSupervisors || 0}\n`;
-      csv += `Inactive Supervisors,${reportData.inactiveSupervisors || 0}\n`;
-      csv += `On Leave Supervisors,${reportData.onLeaveSupervisors || 0}\n\n`;
+      csv += `Total Interns,${reportData.totalInterns || 0}\\n`;
+      csv += `Active Interns,${reportData.activeInterns || 0}\\n`;
+      csv += `Completed Interns,${reportData.completedInterns || 0}\\n`;
+      csv += `Dropped Interns,${reportData.droppedInterns || 0}\\n`;
+      csv += `Suspended Interns,${reportData.suspendedInterns || 0}\\n`;
+      csv += `Total Projects,${reportData.totalProjects || 0}\\n`;
+      csv += `Active Projects,${reportData.activeProjects || 0}\\n`;
+      csv += `Completed Projects,${reportData.completedProjects || 0}\\n`;
+      csv += `Total Supervisors,${reportData.totalSupervisors || 0}\\n`;
+      csv += `Active Supervisors,${reportData.activeSupervisors || 0}\\n`;
+      csv += `Inactive Supervisors,${reportData.inactiveSupervisors || 0}\\n`;
+      csv += `On Leave Supervisors,${reportData.onLeaveSupervisors || 0}\\n\\n`;
       
       // Add detailed intern data table
       if (exportOptions.includes('internDetails') && detailedInterns.length > 0) {
@@ -357,7 +357,7 @@ function ReportExportModal({ reportData, onExport }) {
           const startDate = intern.startDate || '';
           const status = intern.state === 0 ? 'Active' : intern.state === 1 ? 'Dropped' : intern.state === 2 ? 'Completed' : 'Suspended';
           
-          csv += `${id},"${name}",${email},${mobile},${nic},"${address}","${institute}","${degree}",${academicYear},"${specialization}","${programmingLanguages}","${supervisor}",${startDate},${status}\n`;
+          csv += `${id},"${name}",${email},${mobile},${nic},"${address}","${institute}","${degree}",${academicYear},"${specialization}","${programmingLanguages}","${supervisor}",${startDate},${status}\\n`;
         });
         csv += '\\n';
       }
@@ -378,7 +378,7 @@ function ReportExportModal({ reportData, onExport }) {
           const experience = supervisor.experience || '';
           const status = supervisor.state === 1 ? 'Active' : supervisor.state === 0 ? 'Inactive' : 'On Leave';
           
-          csv += `${id},"${name}",${email},${mobile},${nic},"${address}","${technology}",${experience},${status}\n`;
+          csv += `${id},"${name}",${email},${mobile},${nic},"${address}","${technology}",${experience},${status}\\n`;
         });
         csv += '\\n';
       }
@@ -389,7 +389,7 @@ function ReportExportModal({ reportData, onExport }) {
           csv += 'INTERN STATUS DISTRIBUTION\\n';
           csv += 'Status,Count\\n';
           Object.entries(reportData.internStatusDistribution).forEach(([key, value]) => {
-            csv += `${key},${value}\n`;
+            csv += `${key},${value}\\n`;
           });
           csv += '\\n';
         }
@@ -398,7 +398,7 @@ function ReportExportModal({ reportData, onExport }) {
           csv += 'SUPERVISOR STATUS DISTRIBUTION\\n';
           csv += 'Status,Count\\n';
           Object.entries(reportData.supervisorStatusDistribution).forEach(([key, value]) => {
-            csv += `${key},${value}\n`;
+            csv += `${key},${value}\\n`;
           });
           csv += '\\n';
         }
@@ -408,7 +408,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'SPECIALIZATION DISTRIBUTION\\n';
         csv += 'Specialization,Count\\n';
         Object.entries(reportData.specializationDistribution).forEach(([key, value]) => {
-          csv += `${key},${value}\n`;
+          csv += `${key},${value}\\n`;
         });
         csv += '\\n';
       }
@@ -417,7 +417,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'MONTHLY REGISTRATION TRENDS\\n';
         csv += 'Month,Registrations\\n';
         Object.entries(reportData.monthlyRegistrations).forEach(([month, count]) => {
-          csv += `${month},${count}\n`;
+          csv += `${month},${count}\\n`;
         });
         csv += '\\n';
       }
@@ -431,7 +431,7 @@ function ReportExportModal({ reportData, onExport }) {
           const totalHours = performer.totalHours || 'N/A';
           const attendanceRate = performer.attendanceRate || 'N/A';
           const specialization = (performer.specialization || 'N/A').replace(/,/g, ';');
-          csv += `${name},${performanceScore},${totalHours},${attendanceRate},"${specialization}"\n`;
+          csv += `"${name}",${performanceScore},${totalHours},${attendanceRate},"${specialization}"\\n`;
         });
         csv += '\\n';
       }
@@ -441,7 +441,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'DEPARTMENT DISTRIBUTION\\n';
         csv += 'Department,Count\\n';
         Object.entries(reportData.departmentDistribution).forEach(([key, value]) => {
-          csv += `${key},${value}\n`;
+          csv += `${key},${value}\\n`;
         });
         csv += '\\n';
       }
@@ -451,7 +451,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'PROJECTS BY TECHNOLOGY\\n';
         csv += 'Technology,Count\\n';
         Object.entries(reportData.projectsByTechnology).forEach(([key, value]) => {
-          csv += `${key},${value}\n`;
+          csv += `${key},${value}\\n`;
         });
         csv += '\\n';
       }
@@ -464,7 +464,7 @@ function ReportExportModal({ reportData, onExport }) {
           const date = activity.date || 'N/A';
           const type = activity.type || 'N/A';
           const description = (activity.description || 'N/A').replace(/,/g, ';').replace(/"/g, '""');
-          csv += `${date},"${type}","${description}"\n`;
+          csv += `${date},"${type}","${description}"\\n`;
         });
         csv += '\\n';
       }
@@ -475,7 +475,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'Intern,Attendance Rate\\n';
         Object.entries(reportData.attendanceRates).forEach(([intern, rate]) => {
           const internName = (intern || 'N/A').replace(/,/g, ';');
-          csv += `${internName},${rate}%\n`;
+          csv += `"${internName}",${rate}%\\n`;
         });
         csv += '\\n';
       }
@@ -486,7 +486,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'Intern,Average Hours\\n';
         Object.entries(reportData.averageWorkingHours).forEach(([intern, hours]) => {
           const internName = (intern || 'N/A').replace(/,/g, ';');
-          csv += `${internName},${hours}\n`;
+          csv += `"${internName}",${hours}\\n`;
         });
         csv += '\\n';
       }
@@ -497,7 +497,7 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'Supervisor,Number of Interns\\n';
         Object.entries(reportData.internsPerSupervisor).forEach(([supervisor, count]) => {
           const supervisorName = (supervisor || 'N/A').replace(/,/g, ';');
-          csv += `${supervisorName},${count}\n`;
+          csv += `"${supervisorName}",${count}\\n`;
         });
         csv += '\\n';
       }
@@ -508,15 +508,15 @@ function ReportExportModal({ reportData, onExport }) {
         csv += 'Institute,Count\\n';
         Object.entries(reportData.instituteDistribution).forEach(([institute, count]) => {
           const instituteName = (institute || 'N/A').replace(/,/g, ';');
-          csv += `${instituteName},${count}\n`;
+          csv += `"${instituteName}",${count}\\n`;
         });
         csv += '\\n';
       }
       
       // Add generation metadata
-      csv += `\nGenerated on: ${new Date().toLocaleString()}\n`;
-      csv += `Export Settings: ${pdfSettings.format} format, ${pdfSettings.colorScheme} theme\n`;
-      csv += `Sections included: ${exportOptions.join(', ')}\n`;
+      csv += `\\nGenerated on: ${new Date().toLocaleString()}\\n`;
+      csv += `Export Settings: ${pdfSettings.format} format, ${pdfSettings.colorScheme} theme\\n`;
+      csv += `Sections included: ${exportOptions.join(', ')}\\n`;
       
       setExportStatus('Creating download...');
       
