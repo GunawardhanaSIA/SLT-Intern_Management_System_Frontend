@@ -20,7 +20,12 @@ const Attendance = () => {
     const [date, setDate] = useState(today(getLocalTimeZone()))
 
     // Convert Date object to a string (YYYY-MM-DD format)
-    const formatDate = (date) => date.toString();
+    const formatDate = (date) => {
+        const year = date.year;
+        const month = String(date.month).padStart(2, '0');
+        const day = String(date.day).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     useEffect(() => {
         const token = getToken();

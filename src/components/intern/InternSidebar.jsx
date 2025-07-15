@@ -48,9 +48,9 @@ export default function InternSidebar({children}) {
                         <span className='text-xs text-zinc-600'>{email}</span>
                     </div>
                     {/* Logout Icon with Click Handler */}
-                    {/* <button onClick={() => logout(navigate)}>
+                    <button onClick={() => logout(navigate)}>
                         <FiLogOut className='text-2xl text-zinc-600 cursor-pointer'/>
-                    </button> */}
+                    </button>
                 </div>
             </div>
         </nav>

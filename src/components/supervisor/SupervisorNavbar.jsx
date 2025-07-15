@@ -1,8 +1,12 @@
 import { Button } from '@nextui-org/react';
-import React from 'react'
+import React, { useContext } from 'react'
 import { FaUser } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import UserContext from '../../utils/UserContext';
 
 const SupervisorNavbar = ({title}) => {
+  const { logout } = useContext(UserContext); 
+  const navigate = useNavigate();
   return (
     <div className="navbar bg-base-100 pt-1">
       <div className="flex-1">
