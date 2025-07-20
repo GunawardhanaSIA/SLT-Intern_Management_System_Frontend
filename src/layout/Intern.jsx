@@ -14,6 +14,11 @@ const Intern = () => {
   const location = useLocation();
   const [navbarTitle, setNavbarTitle] = useState('Apply for Internships');
   const [intern, setIntern] = useState(null);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+
+  const handleSidebarExpandChange = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
 
   useEffect(() => {
     const token = getToken(); 
@@ -64,7 +69,7 @@ const Intern = () => {
   return (
     <div className="flex h-screen">
       <div className="h-full fixed top-0 left-0">
-        <InternSidebar>
+        <InternSidebar onExpandChange={handleSidebarExpandChange}>
           {sidebarItems.map((item) => (
             <Link
               key={item.path}
@@ -82,7 +87,7 @@ const Intern = () => {
           ))}
         </InternSidebar>
       </div>
-      <div className="flex-1 lg:ml-72">
+      <div className={`flex-1 transition-all duration-300 ${sidebarExpanded ? 'lg:ml-72' : 'lg:ml-20'}`}>
         <InternNavbar title={navbarTitle} />
         <Outlet />
       </div>

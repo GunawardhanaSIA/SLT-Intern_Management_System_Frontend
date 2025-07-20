@@ -9,10 +9,17 @@ import {jwtDecode} from 'jwt-decode';
 
 const SidebarContext = createContext()
 
-export default function InternSidebar({children}) {
+export default function InternSidebar({children, onExpandChange}) {
     const [expanded, setExpanded] = useState(true)
     const { logout } = useContext(UserContext); 
     const navigate = useNavigate();
+
+    // Notify parent component when expanded state changes
+    React.useEffect(() => {
+        if (onExpandChange) {
+            onExpandChange(expanded);
+        }
+    }, [expanded, onExpandChange]);
 
     const token = getToken();
     console.log("Inside Intern Sidebar: ",token);

@@ -14,6 +14,11 @@ const Admin = () => {
   const location = useLocation();
   const [navbarTitle, setNavbarTitle] = useState('Dashboard');
   const [hasNewApplications, setHasNewApplications] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+
+  const handleSidebarExpandChange = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
 
   useEffect(() => {
     const token = getToken(); 
@@ -60,7 +65,7 @@ const Admin = () => {
   return (
     <div className="flex h-screen">
       <div>
-        <AdminSidebar>
+        <AdminSidebar onExpandChange={handleSidebarExpandChange}>
           {sidebarItems.map((item) => (
             <Link
               key={item.path}
@@ -77,7 +82,7 @@ const Admin = () => {
           ))}
         </AdminSidebar>
       </div>
-      <div className="flex-1">
+      <div className={`flex-1 transition-all duration-300 ${sidebarExpanded ? 'lg:ml-72' : 'lg:ml-20'}`}>
         <AdminNavbar title={navbarTitle} />
         <Outlet />
       </div>

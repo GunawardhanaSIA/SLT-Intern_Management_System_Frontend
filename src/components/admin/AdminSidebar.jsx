@@ -9,25 +9,32 @@ import {jwtDecode} from 'jwt-decode';
 
 const SidebarContext = createContext()
 
-export default function AdminSidebar({children}) {
+export default function AdminSidebar({children, onExpandChange}) {
     const [expanded, setExpanded] = useState(true)
     const { logout } = useContext(UserContext); 
     const navigate = useNavigate();
 
+    // Notify parent component when expanded state changes
+    React.useEffect(() => {
+        if (onExpandChange) {
+            onExpandChange(expanded);
+        }
+    }, [expanded, onExpandChange]);
+
     const token = getToken();
-    console.log("Inside Supervisor Sidebar: ",token);
+    console.log("Inside Admin Sidebar: ",token);
 
     const decodedToken = jwtDecode(token);
     const email = decodedToken.sub; 
     console.log(email)
 
   return (
-    <aside className='h-screen'>
+    <aside className='h-screen fixed'>
         <nav className='h-full flex flex-col border-r border-zinc-200 shadow-sm '>
             <div className='px-4 pt-2 pb-10 flex justify-between items-center'>
                 <img 
                     src="/logo.png" 
-                    className={`overflow-hidden transition-all ${expanded ? "w-36": "w-0 pb-12"}`} 
+                    className={`overflow-hidden transition-all ${expanded ? "w-40": "w-0 pb-12"}`} 
                     alt="logo" />
                 <button 
                     onClick={() => setExpanded(curr => !curr)} 
@@ -41,8 +48,8 @@ export default function AdminSidebar({children}) {
             </SidebarContext.Provider>
 
             <div className='border-t border-zinc-200 flex p-3'>
-                <FaUserAlt className='w-8 h-8 rounded-lg p-1.5 border-1.5 text-zinc-600'/>
-                <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-2": "w-0"}`}>
+                <FaUserAlt className='w-7 h-8 rounded-lg p-1.5 border-1.5 text-zinc-600'/>
+                <div className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-56 ml-3": "w-0"}`}>
                     <div className='leading-4'>
                         <h4 className='font-semibold text-zinc-600'>Admin</h4>
                         <span className='text-xs text-zinc-600'>{email}</span>
