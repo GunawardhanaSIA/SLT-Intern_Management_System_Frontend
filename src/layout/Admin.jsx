@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import AdminSidebar, { AdminSidebarItem } from '../components/admin/AdminSidebar';
+import React, { useEffect, useState } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import AdminSidebar, {
+  AdminSidebarItem,
+} from "../components/admin/AdminSidebar";
 import { MdDashboard, MdPersonAddAlt1 } from "react-icons/md";
 import { HiUserGroup } from "react-icons/hi2";
 import { FaUserTie } from "react-icons/fa";
 import { FaCalendarCheck } from "react-icons/fa6";
 import { IoDocuments } from "react-icons/io5";
-import AdminNavbar from '../components/admin/AdminNavbar';
-import { getToken } from '../pages/authentication/Auth';
-import axios from 'axios';
+import AdminNavbar from "../components/admin/AdminNavbar";
+import { getToken } from "../pages/authentication/Auth";
+import axios from "axios";
 
 const Admin = () => {
   const location = useLocation();
-  const [navbarTitle, setNavbarTitle] = useState('Dashboard');
+  const [navbarTitle, setNavbarTitle] = useState("Dashboard");
   const [hasNewApplications, setHasNewApplications] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
@@ -21,41 +23,65 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    const token = getToken(); 
+    const token = getToken();
     if (!token) {
       console.error("No token found");
       return;
     }
 
     try {
-      axios.get(`http://localhost:8080/admin/applicants`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then((response) => {
-        const applicants = response.data;
-        console.log("All applicants: ", applicants)
-        const hasPending = applicants.some(applicant => applicant.state === 0);
-        setHasNewApplications(hasPending);
-      })
-      .catch((error) => {
-        console.error("Error fetching applicants data:", error);
-      });
-
+      axios
+        .get(
+          `${
+            import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+          }/admin/applicants`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((response) => {
+          const applicants = response.data;
+          console.log("All applicants: ", applicants);
+          const hasPending = applicants.some(
+            (applicant) => applicant.state === 0
+          );
+          setHasNewApplications(hasPending);
+        })
+        .catch((error) => {
+          console.error("Error fetching applicants data:", error);
+        });
     } catch (error) {
       console.error("Error decoding token:", error);
     }
   }, []);
 
   const sidebarItems = [
-    { path: '/admin', title: 'Dashboard', icon: <MdDashboard /> },
-    { path: '/admin/new-applications', title: 'New Applications', icon: <MdPersonAddAlt1 />, alert: hasNewApplications },
-    { path: '/admin/upcoming-interviews', title: 'Upcoming Interviews', icon: <FaCalendarCheck /> },
-    { path: '/admin/manage-interns', title: 'Manage Interns', icon: <HiUserGroup /> },
-    { path: '/admin/manage-supervisors', title: 'Manage Supervisors', icon: <FaUserTie /> },
-    { path: '/admin/reports', title: 'Reports', icon: <IoDocuments /> },
+    { path: "/admin", title: "Dashboard", icon: <MdDashboard /> },
+    {
+      path: "/admin/new-applications",
+      title: "New Applications",
+      icon: <MdPersonAddAlt1 />,
+      alert: hasNewApplications,
+    },
+    {
+      path: "/admin/upcoming-interviews",
+      title: "Upcoming Interviews",
+      icon: <FaCalendarCheck />,
+    },
+    {
+      path: "/admin/manage-interns",
+      title: "Manage Interns",
+      icon: <HiUserGroup />,
+    },
+    {
+      path: "/admin/manage-supervisors",
+      title: "Manage Supervisors",
+      icon: <FaUserTie />,
+    },
+    { path: "/admin/reports", title: "Reports", icon: <IoDocuments /> },
   ];
 
   const handleSidebarItemClick = (title) => {
@@ -82,7 +108,11 @@ const Admin = () => {
           ))}
         </AdminSidebar>
       </div>
-      <div className={`flex-1 transition-all duration-300 ${sidebarExpanded ? 'lg:ml-72' : 'lg:ml-20'}`}>
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          sidebarExpanded ? "lg:ml-72" : "lg:ml-20"
+        }`}
+      >
         <AdminNavbar title={navbarTitle} />
         <Outlet />
       </div>

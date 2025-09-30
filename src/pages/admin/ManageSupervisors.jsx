@@ -1,9 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { getToken } from '../authentication/Auth';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { getToken } from "../authentication/Auth";
 import "../../Table.css";
-import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Select, SelectItem, Tooltip } from "@nextui-org/react";
-import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye, FaSortAlphaDown, FaSortAlphaUp, FaPen } from 'react-icons/fa';
+import {
+  Button,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Input,
+  Select,
+  SelectItem,
+  Tooltip,
+} from "@nextui-org/react";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaTimes,
+  FaEye,
+  FaSortAlphaDown,
+  FaSortAlphaUp,
+  FaPen,
+} from "react-icons/fa";
 import { IoSearch } from "react-icons/io5";
 
 const ManageSupervisors = () => {
@@ -13,16 +34,16 @@ const ManageSupervisors = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedSupervisor, setSelectedSupervisor] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [sortOrder, setSortOrder] = useState("asc"); // 'asc' or 'desc'
   const [sortedSupervisors, setSortedSupervisors] = useState([]);
-  const [sortBy, setSortBy] = useState('name'); // field to sort by
-  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState("name"); // field to sort by
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredSupervisors, setFilteredSupervisors] = useState([]);
   const [newSupervisor, setNewSupervisor] = useState({
-    name: '',
-    mobileNumber: '',
-    email: '',
-    specialization: ''
+    name: "",
+    mobileNumber: "",
+    email: "",
+    specialization: "",
   });
 
   useEffect(() => {
@@ -33,38 +54,38 @@ const ManageSupervisors = () => {
     if (supervisors.length > 0) {
       const sorted = [...supervisors].sort((a, b) => {
         let aValue, bValue;
-        
+
         switch (sortBy) {
-          case 'id':
+          case "id":
             aValue = a.supervisorId || 0;
             bValue = b.supervisorId || 0;
-            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
-          case 'name':
-            aValue = a.name || '';
-            bValue = b.name || '';
+            return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+          case "name":
+            aValue = a.name || "";
+            bValue = b.name || "";
             break;
-          case 'email':
-            aValue = a.email || '';
-            bValue = b.email || '';
+          case "email":
+            aValue = a.email || "";
+            bValue = b.email || "";
             break;
-          case 'mobile':
-            aValue = a.mobileNumber || '';
-            bValue = b.mobileNumber || '';
+          case "mobile":
+            aValue = a.mobileNumber || "";
+            bValue = b.mobileNumber || "";
             break;
-          case 'specialization':
-            aValue = a.specialization || '';
-            bValue = b.specialization || '';
+          case "specialization":
+            aValue = a.specialization || "";
+            bValue = b.specialization || "";
             break;
-          case 'status':
+          case "status":
             aValue = a.state || 0;
             bValue = b.state || 0;
-            return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+            return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
           default:
-            aValue = a.name || '';
-            bValue = b.name || '';
+            aValue = a.name || "";
+            bValue = b.name || "";
         }
-        
-        if (sortOrder === 'asc') {
+
+        if (sortOrder === "asc") {
           return aValue.toString().localeCompare(bValue.toString());
         } else {
           return bValue.toString().localeCompare(aValue.toString());
@@ -76,14 +97,19 @@ const ManageSupervisors = () => {
 
   useEffect(() => {
     if (sortedSupervisors.length > 0) {
-      const filtered = sortedSupervisors.filter(supervisor => {
+      const filtered = sortedSupervisors.filter((supervisor) => {
         const searchLower = searchTerm.toLowerCase();
         return (
           supervisor.name?.toLowerCase().includes(searchLower) ||
           supervisor.email?.toLowerCase().includes(searchLower) ||
-          supervisor.mobileNumber?.toString().toLowerCase().includes(searchLower) ||
+          supervisor.mobileNumber
+            ?.toString()
+            .toLowerCase()
+            .includes(searchLower) ||
           supervisor.specialization?.toLowerCase().includes(searchLower) ||
-          `S${String(supervisor.supervisorId).padStart(6, '0')}`.toLowerCase().includes(searchLower)
+          `S${String(supervisor.supervisorId).padStart(6, "0")}`
+            .toLowerCase()
+            .includes(searchLower)
         );
       });
       setFilteredSupervisors(filtered);
@@ -95,75 +121,100 @@ const ManageSupervisors = () => {
   const fetchSupervisors = async () => {
     try {
       const token = getToken();
-      const response = await axios.get('http://localhost:8080/admin/supervisors', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+        }/admin/supervisors`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       setSupervisors(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching supervisors:', error);
+      console.error("Error fetching supervisors:", error);
       setLoading(false);
     }
   };
 
   const handleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(field);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
   const getSortIcon = (field) => {
     if (sortBy === field) {
-      return sortOrder === 'asc' ? <FaSortAlphaDown className="inline ml-1" /> : <FaSortAlphaUp className="inline ml-1" />;
+      return sortOrder === "asc" ? (
+        <FaSortAlphaDown className="inline ml-1" />
+      ) : (
+        <FaSortAlphaUp className="inline ml-1" />
+      );
     }
     return <FaSortAlphaDown className="inline ml-1 opacity-30" />;
   };
 
   const handleEdit = (supervisor) => {
-    setEditingSupervisor({...supervisor});
+    setEditingSupervisor({ ...supervisor });
   };
 
   const handleSave = async () => {
     try {
       const token = getToken();
-      await axios.put(`http://localhost:8080/admin/supervisors/${editingSupervisor.supervisorId}`, editingSupervisor, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      await axios.put(
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+        }/admin/supervisors/${editingSupervisor.supervisorId}`,
+        editingSupervisor,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
       setEditingSupervisor(null);
       fetchSupervisors();
     } catch (error) {
-      console.error('Error updating supervisor:', error);
-      alert('Error updating supervisor');
+      console.error("Error updating supervisor:", error);
+      alert("Error updating supervisor");
     }
   };
 
   const handleDelete = async (supervisorId) => {
-    if (window.confirm('Are you sure you want to deactivate this supervisor?')) {
+    if (
+      window.confirm("Are you sure you want to deactivate this supervisor?")
+    ) {
       try {
         const token = getToken();
         // Find the supervisor to update their status
-        const supervisorToUpdate = supervisors.find(supervisor => supervisor.supervisorId === supervisorId);
+        const supervisorToUpdate = supervisors.find(
+          (supervisor) => supervisor.supervisorId === supervisorId
+        );
         if (supervisorToUpdate) {
           const updatedSupervisor = { ...supervisorToUpdate, state: 0 }; // Set status to Inactive
-          await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}`, updatedSupervisor, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+          await axios.put(
+            `${
+              import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+            }/admin/supervisors/${supervisorId}`,
+            updatedSupervisor,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
             }
-          });
+          );
           fetchSupervisors();
         }
       } catch (error) {
-        console.error('Error updating supervisor status:', error);
-        alert('Error updating supervisor status');
+        console.error("Error updating supervisor status:", error);
+        alert("Error updating supervisor status");
       }
     }
   };
@@ -171,38 +222,50 @@ const ManageSupervisors = () => {
   const handleStatusChange = async (supervisorId, newStatus) => {
     try {
       const token = getToken();
-      await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}/status?status=${newStatus}`, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      await axios.put(
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+        }/admin/supervisors/${supervisorId}/status?status=${newStatus}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
       fetchSupervisors();
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Error updating status');
+      console.error("Error updating status:", error);
+      alert("Error updating status");
     }
   };
 
   const handleAddSupervisor = async () => {
     try {
       const token = getToken();
-      await axios.post('http://localhost:8080/admin/supervisors', newSupervisor, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      await axios.post(
+        `${
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+        }/admin/supervisors`,
+        newSupervisor,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
       setShowAddForm(false);
       setNewSupervisor({
-        name: '',
-        mobileNumber: '',
-        email: '',
-        specialization: ''
+        name: "",
+        mobileNumber: "",
+        email: "",
+        specialization: "",
       });
       fetchSupervisors();
     } catch (error) {
-      console.error('Error adding supervisor:', error);
-      alert('Error adding supervisor');
+      console.error("Error adding supervisor:", error);
+      alert("Error adding supervisor");
     }
   };
 
@@ -218,13 +281,18 @@ const ManageSupervisors = () => {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      0: { text: 'Inactive', color: 'bg-[#FEF2F2] text-[#991B1B]' },
-      1: { text: 'Active', color: 'bg-[#F0FDF4] text-[#166534]' },
-      2: { text: 'On Leave', color: 'bg-[#FEFCE8] text-[#A16207]' }
+      0: { text: "Inactive", color: "bg-[#FEF2F2] text-[#991B1B]" },
+      1: { text: "Active", color: "bg-[#F0FDF4] text-[#166534]" },
+      2: { text: "On Leave", color: "bg-[#FEFCE8] text-[#A16207]" },
     };
-    const statusInfo = statusMap[status] || { text: 'Unknown', color: 'bg-[#F9FAFB] text-[#374151]' };
+    const statusInfo = statusMap[status] || {
+      text: "Unknown",
+      color: "bg-[#F9FAFB] text-[#374151]",
+    };
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}
+      >
         {statusInfo.text}
       </span>
     );
@@ -254,7 +322,6 @@ const ManageSupervisors = () => {
           className="bg-[#52b74d] hover:bg-[#1D4ED8] text-white"
           onPress={() => setShowAddForm(true)}
           startContent={<FaPlus />}
-          
         >
           Add New Supervisor
         </Button>
@@ -263,42 +330,42 @@ const ManageSupervisors = () => {
       <div className="table_component mt-4" role="region" tabIndex="0">
         <table>
           <thead className="text-sm font-thin">
-            <tr className='text-xs text-[#6B7280]'>
-              <th 
+            <tr className="text-xs text-[#6B7280]">
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('id')}
+                onClick={() => handleSort("id")}
               >
-                Supervisor ID {getSortIcon('id')}
+                Supervisor ID {getSortIcon("id")}
               </th>
-              <th 
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('name')}
+                onClick={() => handleSort("name")}
               >
-                Name {getSortIcon('name')}
+                Name {getSortIcon("name")}
               </th>
-              <th 
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('email')}
+                onClick={() => handleSort("email")}
               >
-                Email {getSortIcon('email')}
+                Email {getSortIcon("email")}
               </th>
-              <th 
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('mobile')}
+                onClick={() => handleSort("mobile")}
               >
-                Mobile {getSortIcon('mobile')}
+                Mobile {getSortIcon("mobile")}
               </th>
-              <th 
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('specialization')}
+                onClick={() => handleSort("specialization")}
               >
-                Specialization {getSortIcon('specialization')}
+                Specialization {getSortIcon("specialization")}
               </th>
-              <th 
+              <th
                 className="cursor-pointer hover:text-[#2563EB] select-none"
-                onClick={() => handleSort('status')}
+                onClick={() => handleSort("status")}
               >
-                Status {getSortIcon('status')}
+                Status {getSortIcon("status")}
               </th>
               <th>Actions</th>
             </tr>
@@ -306,62 +373,101 @@ const ManageSupervisors = () => {
           <tbody className="text-xs align-top">
             {filteredSupervisors.map((supervisor) => (
               <tr key={supervisor.supervisorId}>
-                <td>{`S${String(supervisor.supervisorId).padStart(6, '0')}`}</td>
+                <td>{`S${String(supervisor.supervisorId).padStart(
+                  6,
+                  "0"
+                )}`}</td>
                 <td>
-                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                  {editingSupervisor?.supervisorId ===
+                  supervisor.supervisorId ? (
                     <Input
                       size="sm"
                       value={editingSupervisor.name}
-                      onChange={(e) => setEditingSupervisor({...editingSupervisor, name: e.target.value})}
+                      onChange={(e) =>
+                        setEditingSupervisor({
+                          ...editingSupervisor,
+                          name: e.target.value,
+                        })
+                      }
                     />
                   ) : (
                     supervisor.name
                   )}
                 </td>
                 <td>
-                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                  {editingSupervisor?.supervisorId ===
+                  supervisor.supervisorId ? (
                     <Input
                       size="sm"
                       type="email"
                       value={editingSupervisor.email}
-                      onChange={(e) => setEditingSupervisor({...editingSupervisor, email: e.target.value})}
+                      onChange={(e) =>
+                        setEditingSupervisor({
+                          ...editingSupervisor,
+                          email: e.target.value,
+                        })
+                      }
                     />
                   ) : (
                     supervisor.email
                   )}
                 </td>
                 <td>
-                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                  {editingSupervisor?.supervisorId ===
+                  supervisor.supervisorId ? (
                     <Input
                       size="sm"
                       value={editingSupervisor.mobileNumber}
-                      onChange={(e) => setEditingSupervisor({...editingSupervisor, mobileNumber: e.target.value})}
+                      onChange={(e) =>
+                        setEditingSupervisor({
+                          ...editingSupervisor,
+                          mobileNumber: e.target.value,
+                        })
+                      }
                     />
                   ) : (
                     supervisor.mobileNumber
                   )}
                 </td>
                 <td>
-                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                  {editingSupervisor?.supervisorId ===
+                  supervisor.supervisorId ? (
                     <Input
                       size="sm"
                       value={editingSupervisor.specialization}
-                      onChange={(e) => setEditingSupervisor({...editingSupervisor, specialization: e.target.value})}
+                      onChange={(e) =>
+                        setEditingSupervisor({
+                          ...editingSupervisor,
+                          specialization: e.target.value,
+                        })
+                      }
                     />
                   ) : (
                     supervisor.specialization
                   )}
                 </td>
                 <td>
-                  {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                  {editingSupervisor?.supervisorId ===
+                  supervisor.supervisorId ? (
                     <Select
                       size="sm"
                       selectedKeys={[editingSupervisor.state?.toString()]}
-                      onSelectionChange={(keys) => setEditingSupervisor({...editingSupervisor, state: parseInt(Array.from(keys)[0])})}
+                      onSelectionChange={(keys) =>
+                        setEditingSupervisor({
+                          ...editingSupervisor,
+                          state: parseInt(Array.from(keys)[0]),
+                        })
+                      }
                     >
-                      <SelectItem key="0" value="0">Inactive</SelectItem>
-                      <SelectItem key="1" value="1">Active</SelectItem>
-                      <SelectItem key="2" value="2">On Leave</SelectItem>
+                      <SelectItem key="0" value="0">
+                        Inactive
+                      </SelectItem>
+                      <SelectItem key="1" value="1">
+                        Active
+                      </SelectItem>
+                      <SelectItem key="2" value="2">
+                        On Leave
+                      </SelectItem>
                     </Select>
                   ) : (
                     getStatusBadge(supervisor.state)
@@ -374,7 +480,8 @@ const ManageSupervisors = () => {
                         <FaEye onClick={() => handleViewClick(supervisor)} />
                       </span>
                     </Tooltip>
-                    {editingSupervisor?.supervisorId === supervisor.supervisorId ? (
+                    {editingSupervisor?.supervisorId ===
+                    supervisor.supervisorId ? (
                       <>
                         <Tooltip content="Save">
                           <span className="text-lg text-[#16A34A] cursor-pointer active:opacity-50">
@@ -383,7 +490,9 @@ const ManageSupervisors = () => {
                         </Tooltip>
                         <Tooltip content="Cancel">
                           <span className="text-lg text-[#4B5563] cursor-pointer active:opacity-50">
-                            <FaTimes onClick={() => setEditingSupervisor(null)} />
+                            <FaTimes
+                              onClick={() => setEditingSupervisor(null)}
+                            />
                           </span>
                         </Tooltip>
                       </>
@@ -396,7 +505,11 @@ const ManageSupervisors = () => {
                         </Tooltip>
                         <Tooltip content="Deactivate">
                           <span className="text-lg text-[#DC2626] cursor-pointer active:opacity-50">
-                            <FaTrash onClick={() => handleDelete(supervisor.supervisorId)} />
+                            <FaTrash
+                              onClick={() =>
+                                handleDelete(supervisor.supervisorId)
+                              }
+                            />
                           </span>
                         </Tooltip>
                       </>
@@ -425,26 +538,40 @@ const ManageSupervisors = () => {
                 label="Name"
                 placeholder="Enter supervisor name"
                 value={newSupervisor.name}
-                onChange={(e) => setNewSupervisor({...newSupervisor, name: e.target.value})}
+                onChange={(e) =>
+                  setNewSupervisor({ ...newSupervisor, name: e.target.value })
+                }
               />
               <Input
                 label="Mobile Number"
                 placeholder="Enter mobile number"
                 value={newSupervisor.mobileNumber}
-                onChange={(e) => setNewSupervisor({...newSupervisor, mobileNumber: e.target.value})}
+                onChange={(e) =>
+                  setNewSupervisor({
+                    ...newSupervisor,
+                    mobileNumber: e.target.value,
+                  })
+                }
               />
               <Input
                 label="Email"
                 type="email"
                 placeholder="Enter email address"
                 value={newSupervisor.email}
-                onChange={(e) => setNewSupervisor({...newSupervisor, email: e.target.value})}
+                onChange={(e) =>
+                  setNewSupervisor({ ...newSupervisor, email: e.target.value })
+                }
               />
               <Input
                 label="Specialization"
                 placeholder="Enter specialization"
                 value={newSupervisor.specialization}
-                onChange={(e) => setNewSupervisor({...newSupervisor, specialization: e.target.value})}
+                onChange={(e) =>
+                  setNewSupervisor({
+                    ...newSupervisor,
+                    specialization: e.target.value,
+                  })
+                }
               />
             </div>
           </ModalBody>
@@ -477,47 +604,55 @@ const ManageSupervisors = () => {
       >
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1 text-blue">
-            {selectedSupervisor ? `${`S${String(selectedSupervisor.supervisorId).padStart(6, '0')}`} - ${selectedSupervisor.name}` : "Supervisor Details"}
+            {selectedSupervisor
+              ? `${`S${String(selectedSupervisor.supervisorId).padStart(
+                  6,
+                  "0"
+                )}`} - ${selectedSupervisor.name}`
+              : "Supervisor Details"}
           </ModalHeader>
           <ModalBody>
             {selectedSupervisor ? (
               <div>
-                <h1 className='pb-4 font-semibold'>Supervisor Information</h1>
-                <div className='grid grid-cols-2 gap-y-5 gap-x-7 m-auto'>
-                  <Input 
-                    isDisabled 
-                    label="Supervisor ID" 
-                    labelPlacement="outside" 
-                    value={`S${String(selectedSupervisor.supervisorId).padStart(6, '0')}`} 
-                    type="text" 
+                <h1 className="pb-4 font-semibold">Supervisor Information</h1>
+                <div className="grid grid-cols-2 gap-y-5 gap-x-7 m-auto">
+                  <Input
+                    isDisabled
+                    label="Supervisor ID"
+                    labelPlacement="outside"
+                    value={`S${String(selectedSupervisor.supervisorId).padStart(
+                      6,
+                      "0"
+                    )}`}
+                    type="text"
                   />
-                  <Input 
-                    isDisabled 
-                    label="Name" 
-                    labelPlacement="outside" 
-                    value={selectedSupervisor.name} 
-                    type="text" 
+                  <Input
+                    isDisabled
+                    label="Name"
+                    labelPlacement="outside"
+                    value={selectedSupervisor.name}
+                    type="text"
                   />
-                  <Input 
-                    isDisabled 
-                    label="Email Address" 
-                    labelPlacement="outside" 
-                    value={selectedSupervisor.email} 
-                    type="text" 
+                  <Input
+                    isDisabled
+                    label="Email Address"
+                    labelPlacement="outside"
+                    value={selectedSupervisor.email}
+                    type="text"
                   />
-                  <Input 
-                    isDisabled 
-                    label="Mobile Number" 
-                    labelPlacement="outside" 
-                    value={selectedSupervisor.mobileNumber} 
-                    type="text" 
+                  <Input
+                    isDisabled
+                    label="Mobile Number"
+                    labelPlacement="outside"
+                    value={selectedSupervisor.mobileNumber}
+                    type="text"
                   />
-                  <Input 
-                    isDisabled 
-                    label="Specialization" 
-                    labelPlacement="outside" 
-                    value={selectedSupervisor.specialization} 
-                    type="text" 
+                  <Input
+                    isDisabled
+                    label="Specialization"
+                    labelPlacement="outside"
+                    value={selectedSupervisor.specialization}
+                    type="text"
                   />
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium">Status</label>
@@ -530,9 +665,9 @@ const ManageSupervisors = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button 
-              className='text-red font-bold border-red' 
-              variant="bordered" 
+            <Button
+              className="text-red font-bold border-red"
+              variant="bordered"
               onPress={handleCloseViewModal}
             >
               Close

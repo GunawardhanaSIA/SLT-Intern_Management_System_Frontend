@@ -1,7 +1,11 @@
 import axios from "axios";
 import { isTokenExpired } from "../utils/Auth";
 
-const API_BASE_URL = "http://localhost:8080";
+import axios from "axios";
+
+// Use environment variable for API base URL, fallback to localhost for development
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 // Create axios instance with common configuration
 const apiClient = axios.create({
