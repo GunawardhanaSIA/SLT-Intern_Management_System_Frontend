@@ -1,18 +1,40 @@
-import React, {useEffect, useState} from 'react'
-import {Button, Input, Select, SelectItem, DatePicker, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter,
-        Card, CardHeader, CardBody, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@nextui-org/react";
-import ProjectCard from '../../components/supervisor/dashboard/ProjectCard';
-import { jwtDecode } from 'jwt-decode';
-import { getToken } from '../authentication/Auth';
-import axios from 'axios';
-import {parseDate, today, getLocalTimeZone } from "@internationalized/date";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Input,
+  Select,
+  SelectItem,
+  DatePicker,
+  Textarea,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Checkbox,
+} from "@nextui-org/react";
+import ProjectCard from "../../components/supervisor/dashboard/ProjectCard";
+import { jwtDecode } from "jwt-decode";
+import { getToken } from "../authentication/Auth";
+import axios from "axios";
+import { parseDate, today, getLocalTimeZone } from "@internationalized/date";
+import API_BASE_URL from "../../config/api";
 
 export const technology = [
   { key: "Java", label: "Java" },
   { key: "PHP", label: "PHP" },
   { key: "Python", label: "Python" },
   { key: "C#", label: "C#" },
-  { key: "MERN", label: "MERN" }
+  { key: "MERN", label: "MERN" },
 ];
 
 const SupervisorDashboard = () => {
@@ -20,7 +42,7 @@ const SupervisorDashboard = () => {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [selectedInterns, setSelectedInterns] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [ supervisorId, setSupervisorId ] = useState();
+  const [supervisorId, setSupervisorId] = useState();
   const [interns, setInterns] = useState([]);
   const [projects, setProjects] = useState([]);
   const [selectedDate, setSelectedDate] = useState(today(getLocalTimeZone())); // Default: today's date
@@ -47,15 +69,14 @@ const SupervisorDashboard = () => {
     setMembers((prevMembers) =>
       prevMembers.map((member, i) => (i === index ? value : member))
     );
-  };  
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-        ...prev,
-        [field]: value
-    }));
   };
 
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   // Convert Date object to a string (YYYY-MM-DD format)
   const formatDate = (date) => date.toString();
@@ -81,49 +102,54 @@ const SupervisorDashboard = () => {
   // Get all unique dates for columns
   // const allDates = Object.keys(attendance).sort(); // Sorted for consistency
 
-
   useEffect(() => {
-      const token = getToken();
-      console.log(token);
-      const decodedToken = jwtDecode(token);
-      const user_id = decodedToken.user_id;
-      console.log(user_id);
+    const token = getToken();
+    console.log(token);
+    const decodedToken = jwtDecode(token);
+    const user_id = decodedToken.user_id;
+    console.log(user_id);
 
-      axios.get("http://localhost:8080/supervisor/myInterns",
-        {
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-          }
-        }
-      ) 
-        .then(response => {
-          const filteredInterns = response.data.filter(intern => intern.supervisor.user.id === user_id);
-          setInterns(filteredInterns);
-          console.log(filteredInterns)
-          setSupervisorId(filteredInterns[0].supervisor.supervisorId)
-        })
-        .catch(error => {
-          console.error("Error fetching interns:", error);
-        });
+    axios
+      .get(`${API_BASE_URL}/supervisor/myInterns`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        const filteredInterns = response.data.filter(
+          (intern) => intern.supervisor.user.id === user_id
+        );
+        setInterns(filteredInterns);
+        console.log(filteredInterns);
+        setSupervisorId(filteredInterns[0].supervisor.supervisorId);
+      })
+      .catch((error) => {
+        console.error("Error fetching interns:", error);
+      });
   }, []);
 
   useEffect(() => {
     if (supervisorId) {
-      axios.get("http://localhost:8080/supervisor/myProjects", {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`
-        }
+      axios
+        .get(`${API_BASE_URL}/supervisor/myProjects`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+          },
         })
-        .then(response => {
-          console.log(response.data)
-          const filteredProjects = response.data.filter(project => project.supervisor.supervisorId === supervisorId);
-          setProjects(filteredProjects.sort((a, b) => b.projectId - a.projectId));
+        .then((response) => {
+          console.log(response.data);
+          const filteredProjects = response.data.filter(
+            (project) => project.supervisor.supervisorId === supervisorId
+          );
+          setProjects(
+            filteredProjects.sort((a, b) => b.projectId - a.projectId)
+          );
           console.log(supervisorId, filteredProjects);
 
           // filteredProjects.forEach(project => {
-          //   axios.get(`http://localhost:8080/supervisor/attendance/${project.projectId}`, {
+          //   axios.get(`${API_BASE_URL}/supervisor/attendance/${project.projectId}`, {
           //       headers: {
           //           'Content-Type': 'application/json',
           //           'Authorization': `Bearer ${getToken()}`
@@ -155,43 +181,41 @@ const SupervisorDashboard = () => {
           //     console.log("Is structuredAttendance an Object?", structuredAttendance instanceof Object);
           //     console.log("Raw Object.keys(structuredAttendance):", Object.keys(structuredAttendance));
 
-          //     const allDates = Object.keys(structuredAttendance).sort(); 
+          //     const allDates = Object.keys(structuredAttendance).sort();
 
+          // Set columns per project
+          //       setColumns(prevColumns => ({
+          //         ...prevColumns,
+          //         [project.projectId]: [
+          //             { key: "name", label: "Member Name" },
+          //             ...allDates.map(date => ({ key: date, label: date })) // Dynamically set date columns
+          //         ]
+          //     }));
 
-              // Set columns per project
-        //       setColumns(prevColumns => ({
-        //         ...prevColumns,
-        //         [project.projectId]: [
-        //             { key: "name", label: "Member Name" },
-        //             ...allDates.map(date => ({ key: date, label: date })) // Dynamically set date columns
-        //         ]
-        //     }));
+          //     console.log(columns)
 
-        //     console.log(columns)
-
-        //       // Set rows per project
-        //       setRows(prevRows => ({
-        //           ...prevRows,
-        //           [project.projectId]: project.interns.map(intern => {
-        //               let rowData = { id: intern.internId, name: intern.name };
-        //               allDates.forEach(date => {
-        //                   rowData[date] = structuredAttendance[date]?.[intern.internId] ? "✅" : "❌";
-        //               });
-        //               return rowData;
-        //           })
-        //       }));
-        //     })
-        //     .catch(error => {
-        //         console.error(`Error fetching attendance for project ${project.projectId}:`, error);
-        //     });
-        // });
+          //       // Set rows per project
+          //       setRows(prevRows => ({
+          //           ...prevRows,
+          //           [project.projectId]: project.interns.map(intern => {
+          //               let rowData = { id: intern.internId, name: intern.name };
+          //               allDates.forEach(date => {
+          //                   rowData[date] = structuredAttendance[date]?.[intern.internId] ? "✅" : "❌";
+          //               });
+          //               return rowData;
+          //           })
+          //       }));
+          //     })
+          //     .catch(error => {
+          //         console.error(`Error fetching attendance for project ${project.projectId}:`, error);
+          //     });
+          // });
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching projects:", error);
         });
-      }
-    }, [supervisorId, attendanceData]);
-
+    }
+  }, [supervisorId, attendanceData]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -202,7 +226,7 @@ const SupervisorDashboard = () => {
 
   const handleCreateProject = () => {
     const token = getToken();
-  
+
     const formattedStartDate = startDate.toString();
     const formatTargettDate = targetDate.toString();
 
@@ -216,8 +240,8 @@ const SupervisorDashboard = () => {
     // console.log(projectInterns)
 
     const projectInterns = [member1, member2, member3, member4]
-      .filter(Boolean)  // Remove any empty (null/undefined) selections
-      .map(id => ({ internId: id }));  // Map to { internId: id }
+      .filter(Boolean) // Remove any empty (null/undefined) selections
+      .map((id) => ({ internId: id })); // Map to { internId: id }
 
     const projectData = {
       groupName: formData.groupName,
@@ -226,234 +250,258 @@ const SupervisorDashboard = () => {
       technology: formData.technology,
       startDate: formattedStartDate,
       targetDate: formatTargettDate,
-      interns: projectInterns
+      interns: projectInterns,
     };
 
-    console.log("submitting data: ", projectData)
+    console.log("submitting data: ", projectData);
 
-    axios.post(`http://localhost:8080/supervisor/createProject?supervisorId=${supervisorId}`, projectData, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+    axios
+      .post(
+        `${API_BASE_URL}/supervisor/createProject?supervisorId=${supervisorId}`,
+        projectData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-    })
-    .then(response => {
-      console.log(response.data)
+      )
+      .then((response) => {
+        console.log(response.data);
         alert("Project created successfully!");
-        setProjects(prevProjects => [response.data, ...prevProjects]); 
-        setIsModalOpen(false);  // Close modal on success
-    })
-    .catch(error => {
+        setProjects((prevProjects) => [response.data, ...prevProjects]);
+        setIsModalOpen(false); // Close modal on success
+      })
+      .catch((error) => {
         console.error("Error creating project:", error);
         alert("Failed to create project.");
-    });
+      });
   };
 
-// const handleSaveAttendance = async () => {
-//   const token = getToken();
-//   const formattedDate = selectedDate.toString();
+  // const handleSaveAttendance = async () => {
+  //   const token = getToken();
+  //   const formattedDate = selectedDate.toString();
 
-//   try {
-//       const updatedAttendanceData = { ...attendanceData };
+  //   try {
+  //       const updatedAttendanceData = { ...attendanceData };
 
-//       await Promise.all(selectedInterns.map(async (intern) => {
-//           const attendanceEntry = {
-//               intern: intern.internId,
-//               projectId: selectedProject.projectId,
-//               date: formattedDate,
-//               status: attendance[formattedDate]?.[intern.internId] || false
-//           };
+  //       await Promise.all(selectedInterns.map(async (intern) => {
+  //           const attendanceEntry = {
+  //               intern: intern.internId,
+  //               projectId: selectedProject.projectId,
+  //               date: formattedDate,
+  //               status: attendance[formattedDate]?.[intern.internId] || false
+  //           };
 
-//           console.log("Sending attendance data:", attendanceEntry);
+  //           console.log("Sending attendance data:", attendanceEntry);
 
-//           const response = await fetch(
-//               `http://localhost:8080/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`, 
-//               {
-//                   method: "POST",
-//                   headers: {
-//                       "Content-Type": "application/json",
-//                       "Authorization": `Bearer ${token}`,
-//                   },
-//               }
-//           );
+  //           const response = await fetch(
+  //               `${API_BASE_URL}/supervisor/attendance?internId=${intern.internId}&projectId=${selectedProject.projectId}&date=${formattedDate}&status=${attendanceEntry.status}`,
+  //               {
+  //                   method: "POST",
+  //                   headers: {
+  //                       "Content-Type": "application/json",
+  //                       "Authorization": `Bearer ${token}`,
+  //                   },
+  //               }
+  //           );
 
-//           if (!response.ok) {
-//               throw new Error("Failed to save attendance");
-//           }
+  //           if (!response.ok) {
+  //               throw new Error("Failed to save attendance");
+  //           }
 
-//           console.log("Attendance saved for intern:", intern);
+  //           console.log("Attendance saved for intern:", intern);
 
-//           // ✅ **Update `updatedAttendanceData` before fetching**
-//           if (!updatedAttendanceData[selectedProject.projectId]) {
-//               updatedAttendanceData[selectedProject.projectId] = {};
-//           }
+  //           // ✅ **Update `updatedAttendanceData` before fetching**
+  //           if (!updatedAttendanceData[selectedProject.projectId]) {
+  //               updatedAttendanceData[selectedProject.projectId] = {};
+  //           }
 
-//           if (!updatedAttendanceData[selectedProject.projectId][formattedDate]) {
-//               updatedAttendanceData[selectedProject.projectId][formattedDate] = {};
-//           }
+  //           if (!updatedAttendanceData[selectedProject.projectId][formattedDate]) {
+  //               updatedAttendanceData[selectedProject.projectId][formattedDate] = {};
+  //           }
 
-//           updatedAttendanceData[selectedProject.projectId][formattedDate][intern.internId] = attendanceEntry.status;
-//       }));
+  //           updatedAttendanceData[selectedProject.projectId][formattedDate][intern.internId] = attendanceEntry.status;
+  //       }));
 
-//       // ✅ **1. Update state immediately**
-//       setAttendanceData(updatedAttendanceData);
+  //       // ✅ **1. Update state immediately**
+  //       setAttendanceData(updatedAttendanceData);
 
-//       // ✅ **2. Close modal after updating state**
-//       setIsAttendanceModalOpen(false);
+  //       // ✅ **2. Close modal after updating state**
+  //       setIsAttendanceModalOpen(false);
 
-//       // ✅ **3. Trigger a re-fetch**
-//       fetchUpdatedAttendance(selectedProject.projectId);
+  //       // ✅ **3. Trigger a re-fetch**
+  //       fetchUpdatedAttendance(selectedProject.projectId);
 
-//   } catch (error) {
-//       console.error("Error saving attendance:", error);
-//   }
-// };
-
+  //   } catch (error) {
+  //       console.error("Error saving attendance:", error);
+  //   }
+  // };
 
   const handleOpenModal = () => {
-    setIsModalOpen(true); 
-};
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false); 
+    setIsModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
-    <div className='m-6'>
-      <div className='flex justify-between'>
-        <h1 className='text-xl text-blue'>Total Number of Projects : {projects.length}</h1>
-        <Button className='bg-blue font-bold text-white' onClick={() => handleOpenModal()}>Create New Project</Button>
+    <div className="m-6">
+      <div className="flex justify-between">
+        <h1 className="text-xl text-blue">
+          Total Number of Projects : {projects.length}
+        </h1>
+        <Button
+          className="bg-blue font-bold text-white"
+          onClick={() => handleOpenModal()}
+        >
+          Create New Project
+        </Button>
       </div>
 
-      <div className='flex gap-6 my-8 items-center'>
-        <h2 className='font-bold'>Select the Technology</h2>
+      <div className="flex gap-6 my-8 items-center">
+        <h2 className="font-bold">Select the Technology</h2>
         <Select
-          className='w-36'
+          className="w-36"
           variant="bordered"
           defaultSelectedKeys={["All"]}
         >
           {technology.map((item) => (
-          <SelectItem key={item.key} value={item.key}>
+            <SelectItem key={item.key} value={item.key}>
               {item.label}
-          </SelectItem>
+            </SelectItem>
           ))}
         </Select>
-        <Button className='border-green font-bold text-green' variant='bordered'>Load Projects</Button>
+        <Button
+          className="border-green font-bold text-green"
+          variant="bordered"
+        >
+          Load Projects
+        </Button>
       </div>
 
-      <div className='flex flex-col justify-center items-center mt-12 mx-40 gap-8'>
+      <div className="flex flex-col justify-center items-center mt-12 mx-40 gap-8">
         {projects.map((project, index) => (
-        <Card className='p-4 mb-5 w-full'>
-          <CardHeader className='flex justify-between'>
-              <h1 className='font-bold text-lg text-blue'>{project.groupName} - {project.projectName}</h1>
+          <Card className="p-4 mb-5 w-full">
+            <CardHeader className="flex justify-between">
+              <h1 className="font-bold text-lg text-blue">
+                {project.groupName} - {project.projectName}
+              </h1>
               {/* <Button variant='bordered' className='font-bold text-green bg-none border-green'>Edit Project</Button> */}
-          </CardHeader>
-          <CardBody>
+            </CardHeader>
+            <CardBody>
               <div className="w-full space-y-6 mt-4">
-                  <div className="flex flex-wrap md:flex-nowrap gap-6">
-                      <Input 
-                          // isDisabled
-                          size='md' 
-                          variant='bordered' 
-                          label="Group Name" 
-                          labelPlacement='outside' 
-                          type="text" 
-                          defaultValue={project.groupName}
-                          className="w-full md:w-1/2"
-                      />
+                <div className="flex flex-wrap md:flex-nowrap gap-6">
+                  <Input
+                    // isDisabled
+                    size="md"
+                    variant="bordered"
+                    label="Group Name"
+                    labelPlacement="outside"
+                    type="text"
+                    defaultValue={project.groupName}
+                    className="w-full md:w-1/2"
+                  />
 
-                      <Input 
-                          size='md' 
-                          // isDisabled
-                          variant='bordered' 
-                          label="Project Name" 
-                          labelPlacement='outside' 
-                          type="text" 
-                          defaultValue={project.projectName}
-                          className="w-full md:w-1/2"
-                      />
-                  </div>
+                  <Input
+                    size="md"
+                    // isDisabled
+                    variant="bordered"
+                    label="Project Name"
+                    labelPlacement="outside"
+                    type="text"
+                    defaultValue={project.projectName}
+                    className="w-full md:w-1/2"
+                  />
+                </div>
 
-                  <div>
-                      <Textarea  
-                          variant='bordered' 
-                          // isDisabled
-                          label="Description" 
-                          labelPlacement='outside' 
-                          type="text" 
-                          defaultValue={project.description}
-                          className="w-full"
-                      />
-                  </div>
+                <div>
+                  <Textarea
+                    variant="bordered"
+                    // isDisabled
+                    label="Description"
+                    labelPlacement="outside"
+                    type="text"
+                    defaultValue={project.description}
+                    className="w-full"
+                  />
+                </div>
 
-                  <div className="flex flex-wrap md:flex-nowrap gap-6">
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Start Date" 
-                          labelPlacement='outside' 
-                          defaultValue={project.startDate}
-                          className="w-full md:w-1/2"
-                      />
+                <div className="flex flex-wrap md:flex-nowrap gap-6">
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Start Date"
+                    labelPlacement="outside"
+                    defaultValue={project.startDate}
+                    className="w-full md:w-1/2"
+                  />
 
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Target Date" 
-                          labelPlacement='outside' 
-                          defaultValue={project.targetDate}
-                          className="w-full md:w-1/2"
-                      />
-                  </div>
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Target Date"
+                    labelPlacement="outside"
+                    defaultValue={project.targetDate}
+                    className="w-full md:w-1/2"
+                  />
+                </div>
 
-                  <div className="flex flex-wrap md:flex-nowrap gap-6">
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Member 1" 
-                          labelPlacement='outside' 
-                          defaultValue={project.interns[0]?.name || "N/A"}
-                          className="w-full md:w-1/2"
-                      />
+                <div className="flex flex-wrap md:flex-nowrap gap-6">
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Member 1"
+                    labelPlacement="outside"
+                    defaultValue={project.interns[0]?.name || "N/A"}
+                    className="w-full md:w-1/2"
+                  />
 
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Member 2" 
-                          labelPlacement='outside' 
-                          defaultValue={project.interns[1]?.name || "N/A"}
-                          className="w-full md:w-1/2"
-                      />
-                  </div>
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Member 2"
+                    labelPlacement="outside"
+                    defaultValue={project.interns[1]?.name || "N/A"}
+                    className="w-full md:w-1/2"
+                  />
+                </div>
 
-                  <div className="flex flex-wrap md:flex-nowrap gap-6">
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Member 3" 
-                          labelPlacement='outside' 
-                          defaultValue={project.interns[2]?.name || "N/A"}
-                          className="w-full md:w-1/2"
-                      />
+                <div className="flex flex-wrap md:flex-nowrap gap-6">
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Member 3"
+                    labelPlacement="outside"
+                    defaultValue={project.interns[2]?.name || "N/A"}
+                    className="w-full md:w-1/2"
+                  />
 
-                      <Input 
-                          variant='bordered' 
-                          // isDisabled
-                          label="Member 4" 
-                          labelPlacement='outside' 
-                          defaultValue={project.interns[3]?.name || "N/A"}
-                          className="w-full md:w-1/2"
-                      />
-                  </div>
+                  <Input
+                    variant="bordered"
+                    // isDisabled
+                    label="Member 4"
+                    labelPlacement="outside"
+                    defaultValue={project.interns[3]?.name || "N/A"}
+                    className="w-full md:w-1/2"
+                  />
+                </div>
 
-                  <div className='flex justify-between'>
-                    <Button variant='bordered' className='font-bold text-blue border-blue'>Add More Members</Button>
-                    <Button className='font-bold text-white bg-green'>Save Changes</Button>
-                  </div>
+                <div className="flex justify-between">
+                  <Button
+                    variant="bordered"
+                    className="font-bold text-blue border-blue"
+                  >
+                    Add More Members
+                  </Button>
+                  <Button className="font-bold text-white bg-green">
+                    Save Changes
+                  </Button>
+                </div>
 
-                  {/* Past Attendance Table */}
-                  {/* <div className="mt-20">
+                {/* Past Attendance Table */}
+                {/* <div className="mt-20">
                       <div className='flex justify-between items-center mt-10 mb-3'>
                           <h2 className="font-semibold text-md mb-2">Attendance</h2>
 
@@ -483,10 +531,10 @@ const SupervisorDashboard = () => {
                   </Table>
                 </div> */}
               </div>
-          </CardBody>
+            </CardBody>
 
-          {/* Attendance Marking Modal */}
-          {/* <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)}>
+            {/* Attendance Marking Modal */}
+            {/* <Modal isOpen={isAttendanceModalOpen} onClose={() => setIsAttendanceModalOpen(false)}>
             <ModalContent>
                       <ModalHeader>Mark Attendance</ModalHeader>
                       <ModalBody>
@@ -534,168 +582,175 @@ const SupervisorDashboard = () => {
         ))}
       </div>
 
-       {/* create new project */}
-        <Modal
-            isOpen={isModalOpen} 
-            onClose={handleCloseModal} 
-            scrollBehavior="inside"
-            size="lg"
-            style={{ height: '600px' }}
-          >
-            <ModalContent>
-              <ModalHeader className="flex flex-col gap-1 text-blue">
-                Create New Project
-              </ModalHeader>
-              <ModalBody className='flex flex-col gap-8 mt-4'>
-                <Select
-                  label="Technology"
-                  labelPlacement="outside"
-                  placeholder="Select the technology"
-                  variant="bordered"
-                  value={formData.technology}
-                  onChange={(e) => handleChange("technology", e.target.value)}
-                >
-                  {technology.map((item) => (
-                  <SelectItem key={item.key} value={item.key}>
-                      {item.label}
-                  </SelectItem>
-                  ))}
-                </Select>
+      {/* create new project */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        scrollBehavior="inside"
+        size="lg"
+        style={{ height: "600px" }}
+      >
+        <ModalContent>
+          <ModalHeader className="flex flex-col gap-1 text-blue">
+            Create New Project
+          </ModalHeader>
+          <ModalBody className="flex flex-col gap-8 mt-4">
+            <Select
+              label="Technology"
+              labelPlacement="outside"
+              placeholder="Select the technology"
+              variant="bordered"
+              value={formData.technology}
+              onChange={(e) => handleChange("technology", e.target.value)}
+            >
+              {technology.map((item) => (
+                <SelectItem key={item.key} value={item.key}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </Select>
 
-                <Input 
-                  size='md' 
-                  variant='bordered' 
-                  label="Group Name" 
-                  labelPlacement='outside' 
-                  type="text" 
-                  placeholder='Enter group name' 
-                  value={formData.groupName}
-                  onChange={(e) => handleInputChange("groupName", e.target.value)}
-                />
+            <Input
+              size="md"
+              variant="bordered"
+              label="Group Name"
+              labelPlacement="outside"
+              type="text"
+              placeholder="Enter group name"
+              value={formData.groupName}
+              onChange={(e) => handleInputChange("groupName", e.target.value)}
+            />
 
-                <Input 
-                  size='md' 
-                  variant='bordered' 
-                  label="Project Name" 
-                  labelPlacement='outside' 
-                  type="text" 
-                  placeholder='Enter project name' 
-                  value={formData.projectName}
-                  onChange={(e) => handleInputChange("projectName", e.target.value)}
-                />
+            <Input
+              size="md"
+              variant="bordered"
+              label="Project Name"
+              labelPlacement="outside"
+              type="text"
+              placeholder="Enter project name"
+              value={formData.projectName}
+              onChange={(e) => handleInputChange("projectName", e.target.value)}
+            />
 
-                <Textarea  
-                  variant='bordered' 
-                  label="Description" 
-                  labelPlacement='outside' 
-                  type="text" 
-                  placeholder='Enter a description about the project' 
-                  value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                />
+            <Textarea
+              variant="bordered"
+              label="Description"
+              labelPlacement="outside"
+              type="text"
+              placeholder="Enter a description about the project"
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+            />
 
-                <DatePicker 
-                  variant='bordered' 
-                  label="Start Date" 
-                  labelPlacement='outside'
-                  // value={formData.startDate}
-                  // onChange={(e) => handleInputChange("startDate", e.target.value)}
-                  onChange={(newDate) => setStartDate(newDate)}
-                  granularity="day" 
-                  value={startDate}
-                />
+            <DatePicker
+              variant="bordered"
+              label="Start Date"
+              labelPlacement="outside"
+              // value={formData.startDate}
+              // onChange={(e) => handleInputChange("startDate", e.target.value)}
+              onChange={(newDate) => setStartDate(newDate)}
+              granularity="day"
+              value={startDate}
+            />
 
-                <DatePicker 
-                  variant='bordered' 
-                  label="Target Date" 
-                  labelPlacement='outside' 
-                  // value={formData.targetDate}
-                  // onChange={(e) => handleInputChange("targetDate", e.target.value)}
-                  onChange={(newDate) => setTargetDate(newDate)}
-                  granularity="day" 
-                  value={targetDate}
-                />
+            <DatePicker
+              variant="bordered"
+              label="Target Date"
+              labelPlacement="outside"
+              // value={formData.targetDate}
+              // onChange={(e) => handleInputChange("targetDate", e.target.value)}
+              onChange={(newDate) => setTargetDate(newDate)}
+              granularity="day"
+              value={targetDate}
+            />
 
-                <Select
-                  label="Member 1"
-                  labelPlacement="outside"
-                  placeholder="Select the member 1"
-                  variant="bordered"
-                  // value={formData.member1}
-                  // onChange={(e) => handleInputChange("member1", e.target.value)}
-                  value={member1}  
-                  onChange={(e) => setMember1(e.target.value)}
-                >
-                  {interns.map((intern) => (
-                  <SelectItem key={intern.internId} value={intern.internId}>
-                      {intern.name}
-                  </SelectItem>
-                  ))}
-                </Select>
+            <Select
+              label="Member 1"
+              labelPlacement="outside"
+              placeholder="Select the member 1"
+              variant="bordered"
+              // value={formData.member1}
+              // onChange={(e) => handleInputChange("member1", e.target.value)}
+              value={member1}
+              onChange={(e) => setMember1(e.target.value)}
+            >
+              {interns.map((intern) => (
+                <SelectItem key={intern.internId} value={intern.internId}>
+                  {intern.name}
+                </SelectItem>
+              ))}
+            </Select>
 
-                <Select
-                  label="Member 2"
-                  labelPlacement="outside"
-                  placeholder="Select the member 2"
-                  variant="bordered"
-                  // value={formData.member2}
-                  // onChange={(e) => handleInputChange("member2", e.target.value)}
-                  value={member2}  
-                  onChange={(e) => setMember2(e.target.value)}
-                >
-                  {interns.map((intern) => (
-                  <SelectItem key={intern.internId} value={intern.internId}>
-                      {intern.name}
-                  </SelectItem>
-                  ))}
-                </Select>
+            <Select
+              label="Member 2"
+              labelPlacement="outside"
+              placeholder="Select the member 2"
+              variant="bordered"
+              // value={formData.member2}
+              // onChange={(e) => handleInputChange("member2", e.target.value)}
+              value={member2}
+              onChange={(e) => setMember2(e.target.value)}
+            >
+              {interns.map((intern) => (
+                <SelectItem key={intern.internId} value={intern.internId}>
+                  {intern.name}
+                </SelectItem>
+              ))}
+            </Select>
 
-                <Select
-                  label="Member 3"
-                  labelPlacement="outside"
-                  placeholder="Select the member 3"
-                  variant="bordered"
-                  // value={formData.member3}
-                  // onChange={(e) => handleInputChange("member3", e.target.value)}
-                  value={member3}  
-                  onChange={(e) => setMember3(e.target.value)}
-                >
-                  {interns.map((intern) => (
-                  <SelectItem key={intern.internId} value={intern.internId}>
-                      {intern.name}
-                  </SelectItem>
-                  ))}
-                </Select>
+            <Select
+              label="Member 3"
+              labelPlacement="outside"
+              placeholder="Select the member 3"
+              variant="bordered"
+              // value={formData.member3}
+              // onChange={(e) => handleInputChange("member3", e.target.value)}
+              value={member3}
+              onChange={(e) => setMember3(e.target.value)}
+            >
+              {interns.map((intern) => (
+                <SelectItem key={intern.internId} value={intern.internId}>
+                  {intern.name}
+                </SelectItem>
+              ))}
+            </Select>
 
-                <Select
-                  label="Member 4"
-                  labelPlacement="outside"
-                  placeholder="Select the member 4"
-                  variant="bordered"
-                  // value={formData.member4}
-                  // onChange={(e) => handleInputChange("member4", e.target.value)}
-                  value={member4}  
-                  onChange={(e) => setMember4(e.target.value)}
-                >
-                  {interns.map((intern) => (
-                  <SelectItem key={intern.internId} value={intern.internId}>
-                      {intern.name}
-                  </SelectItem>
-                  ))}
-                </Select>
-              </ModalBody>
-              <ModalFooter>
-                <Button className='text-red font-bold border-red' variant="bordered" onPress={handleCloseModal}>
-                  Close
-                </Button>
-                <Button className='text-white font-bold bg-green' onClick={handleCreateProject}>
-                  Create
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-        </Modal>
+            <Select
+              label="Member 4"
+              labelPlacement="outside"
+              placeholder="Select the member 4"
+              variant="bordered"
+              // value={formData.member4}
+              // onChange={(e) => handleInputChange("member4", e.target.value)}
+              value={member4}
+              onChange={(e) => setMember4(e.target.value)}
+            >
+              {interns.map((intern) => (
+                <SelectItem key={intern.internId} value={intern.internId}>
+                  {intern.name}
+                </SelectItem>
+              ))}
+            </Select>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              className="text-red font-bold border-red"
+              variant="bordered"
+              onPress={handleCloseModal}
+            >
+              Close
+            </Button>
+            <Button
+              className="text-white font-bold bg-green"
+              onClick={handleCreateProject}
+            >
+              Create
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
-  )
-}
+  );
+};
 
-export default SupervisorDashboard
+export default SupervisorDashboard;

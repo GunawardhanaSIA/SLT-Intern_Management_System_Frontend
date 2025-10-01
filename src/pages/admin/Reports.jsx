@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { Card, CardBody, CardHeader, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
+import API_BASE_URL from "../config/api"; // Added by update script
 import { PieChart, BarChart, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { 
   LineChart as MUILineChart, 
   BarChart as MUIBarChart, 
@@ -9,8 +12,11 @@ import {
   markElementClasses 
 } from '@mui/x-charts';
 import axios from 'axios';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { getToken } from '../authentication/Auth';
+import API_BASE_URL from "../config/api"; // Added by update script
 import ReportExportModal from '../../components/ReportExportModal';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { 
   TrendingUp, 
   Users, 
@@ -42,7 +48,7 @@ function Reports() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await axios.get('http://localhost:8080/admin/reports', {
+      const response = await axios.get(`${API_BASE_URL}/admin/reports', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

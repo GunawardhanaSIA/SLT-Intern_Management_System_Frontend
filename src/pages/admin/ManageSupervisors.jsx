@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from "../config/api"; // Added by update script
 import axios from 'axios';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { getToken } from '../authentication/Auth';
+import API_BASE_URL from "../config/api"; // Added by update script
 import "../../Table.css";
 import { Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Select, SelectItem, Tooltip } from "@nextui-org/react";
+import API_BASE_URL from "../config/api"; // Added by update script
 import { FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaEye, FaSortAlphaDown, FaSortAlphaUp, FaPen } from 'react-icons/fa';
+import API_BASE_URL from "../config/api"; // Added by update script
 import { IoSearch } from "react-icons/io5";
+import API_BASE_URL from "../config/api"; // Added by update script
 
 const ManageSupervisors = () => {
   const [supervisors, setSupervisors] = useState([]);
@@ -95,7 +101,7 @@ const ManageSupervisors = () => {
   const fetchSupervisors = async () => {
     try {
       const token = getToken();
-      const response = await axios.get('http://localhost:8080/admin/supervisors', {
+      const response = await axios.get(`${API_BASE_URL}/admin/supervisors`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -131,7 +137,7 @@ const ManageSupervisors = () => {
   const handleSave = async () => {
     try {
       const token = getToken();
-      await axios.put(`http://localhost:8080/admin/supervisors/${editingSupervisor.supervisorId}`, editingSupervisor, {
+      await axios.put(`${API_BASE_URL}/admin/supervisors/${editingSupervisor.supervisorId}`, editingSupervisor, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -153,7 +159,7 @@ const ManageSupervisors = () => {
         const supervisorToUpdate = supervisors.find(supervisor => supervisor.supervisorId === supervisorId);
         if (supervisorToUpdate) {
           const updatedSupervisor = { ...supervisorToUpdate, state: 0 }; // Set status to Inactive
-          await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}`, updatedSupervisor, {
+          await axios.put(`${API_BASE_URL}/admin/supervisors/${supervisorId}`, updatedSupervisor, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -171,7 +177,7 @@ const ManageSupervisors = () => {
   const handleStatusChange = async (supervisorId, newStatus) => {
     try {
       const token = getToken();
-      await axios.put(`http://localhost:8080/admin/supervisors/${supervisorId}/status?status=${newStatus}`, {}, {
+      await axios.put(`${API_BASE_URL}/admin/supervisors/${supervisorId}/status?status=${newStatus}`, {}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -186,7 +192,7 @@ const ManageSupervisors = () => {
   const handleAddSupervisor = async () => {
     try {
       const token = getToken();
-      await axios.post('http://localhost:8080/admin/supervisors', newSupervisor, {
+      await axios.post(`${API_BASE_URL}/admin/supervisors`, newSupervisor, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -4,7 +4,7 @@ import { getRole, getUserId, isAuthenticated } from '../utils/Auth';
 // import { workRecordAPI } from '../components/workRecordAPI';
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = "${API_BASE_URL}";
 
 const DebugPanel = () => {
   const [testResult, setTestResult] = useState(null);

@@ -9,6 +9,11 @@ import SupervisorNavbar from '../components/supervisor/SupervisorNavbar';
 const Supervisor = () => {
   const location = useLocation();
   const [navbarTitle, setNavbarTitle] = useState('Projects');
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+
+  const handleSidebarExpandChange = (expanded) => {
+    setSidebarExpanded(expanded);
+  };
 
   const sidebarItems = [
     { path: '/supervisor', title: 'Projects', icon: <FaLaptopCode /> },
@@ -23,7 +28,7 @@ const Supervisor = () => {
   return (
     <div className="flex h-screen">
       <div className='h-full fixed top-0 left-0'>
-        <SupervisorSidebar>
+        <SupervisorSidebar onExpandChange={handleSidebarExpandChange}>
           {sidebarItems.map((item) => (
             <Link
               key={item.path}
@@ -40,7 +45,7 @@ const Supervisor = () => {
           ))}
         </SupervisorSidebar>
       </div>
-      <div className="flex-1  lg:ml-72">
+      <div className={`flex-1 transition-all duration-300 ${sidebarExpanded ? 'lg:ml-72' : 'lg:ml-20'}`}>
         <SupervisorNavbar title={navbarTitle} />
         <Outlet />
       </div>

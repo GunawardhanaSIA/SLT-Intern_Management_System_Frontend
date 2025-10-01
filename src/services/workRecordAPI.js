@@ -1,7 +1,6 @@
 import axios from "axios";
 import { isTokenExpired } from "../utils/Auth";
-
-const API_BASE_URL = "http://localhost:8080";
+import API_BASE_URL from "../config/api";
 
 // Create axios instance with common configuration
 const apiClient = axios.create({

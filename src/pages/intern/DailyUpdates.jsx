@@ -1,11 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Save, Calendar, Briefcase, Clock, Target, FileText, ArrowLeft, Edit3 } from 'lucide-react';
-import { workRecordAPI } from '../../services/workRecordAPI';
-import { isTokenExpired, getUserId, getRole } from '../../utils/Auth';
-import { debugToken } from '../../utils/tokenDebug';
+import React, { useState, useEffect } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Save,
+  Calendar,
+  Briefcase,
+  Clock,
+  Target,
+  FileText,
+  ArrowLeft,
+  Edit3,
+} from "lucide-react";
+import { workRecordAPI } from "../../services/workRecordAPI";
+import { isTokenExpired, getUserId, getRole } from "../../utils/Auth";
+import { debugToken } from "../../utils/tokenDebug";
+import API_BASE_URL from "../../config/api";
 
 const InternDailyRecords = () => {
-  const [currentView, setCurrentView] = useState('add');
+  const [currentView, setCurrentView] = useState("add");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [workRecords, setWorkRecords] = useState({});
@@ -13,37 +26,46 @@ const InternDailyRecords = () => {
     totalHours: 0,
     monthlyHours: 0,
     totalWorkDays: 0,
-    monthlyWorkDays: 0
+    monthlyWorkDays: 0,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentRecord, setCurrentRecord] = useState({
-    tasks: '',
-    hoursWorked: '',
-    department: 'GENERAL',
-    supervisor: '',
-    achievements: '',
-    challenges: '',
-    learnings: '',
-    status: 'COMPLETED'
+    tasks: "",
+    hoursWorked: "",
+    department: "GENERAL",
+    supervisor: "",
+    achievements: "",
+    challenges: "",
+    learnings: "",
+    status: "COMPLETED",
   });
 
-  const departments = ['GENERAL', 'MARKETING', 'ENGINEERING', 'HR', 'FINANCE', 'OPERATIONS', 'DESIGN', 'SALES'];
-  const statusOptions = ['COMPLETED', 'IN_PROGRESS', 'PENDING', 'ON_HOLD'];
+  const departments = [
+    "GENERAL",
+    "MARKETING",
+    "ENGINEERING",
+    "HR",
+    "FINANCE",
+    "OPERATIONS",
+    "DESIGN",
+    "SALES",
+  ];
+  const statusOptions = ["COMPLETED", "IN_PROGRESS", "PENDING", "ON_HOLD"];
 
   // Load data on component mount and when current date changes
   useEffect(() => {
     // Debug authentication status
-    const token = localStorage.getItem('token');
-    console.log('Authentication check:', {
+    const token = localStorage.getItem("token");
+    console.log("Authentication check:", {
       hasToken: !!token,
-      tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token',
-      isExpired: token ? isTokenExpired(token) : 'No token to check'
+      tokenPreview: token ? `${token.substring(0, 20)}...` : "No token",
+      isExpired: token ? isTokenExpired(token) : "No token to check",
     });
-    
+
     // Test backend connection
     testBackendConnection();
-    
+
     loadWorkRecords();
     loadStats();
   }, [currentDate]);
@@ -53,22 +75,22 @@ const InternDailyRecords = () => {
     try {
       setLoading(true);
       const records = await workRecordAPI.getAllWorkRecords();
-      
+
       // Convert array to object with date keys for easier lookup
       const recordsMap = {};
-      records.forEach(record => {
+      records.forEach((record) => {
         const dateKey = record.workDate; // Use the date as returned from API
         recordsMap[dateKey] = {
           ...record,
           department: record.department.toLowerCase(),
-          status: record.status.toLowerCase().replace('_', '-')
+          status: record.status.toLowerCase().replace("_", "-"),
         };
       });
-      
+
       setWorkRecords(recordsMap);
     } catch (err) {
-      setError('Failed to load work records');
-      console.error('Error loading work records:', err);
+      setError("Failed to load work records");
+      console.error("Error loading work records:", err);
     } finally {
       setLoading(false);
     }
@@ -79,33 +101,36 @@ const InternDailyRecords = () => {
       const statsData = await workRecordAPI.getWorkRecordStats();
       setStats(statsData);
     } catch (err) {
-      console.error('Error loading stats:', err);
+      console.error("Error loading stats:", err);
     }
   };
 
   // Test backend connectivity
   const testBackendConnection = async () => {
     try {
-      console.log('Testing backend connection...');
-      const response = await fetch('http://localhost:8080/api/work-records', {
-        method: 'GET',
+      console.log("Testing backend connection...");
+      const response = await fetch(`${API_BASE_URL}/api/work-records`, {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
       });
-      console.log('Backend response status:', response.status);
-      console.log('Backend response headers:', Object.fromEntries(response.headers.entries()));
-      
+      console.log("Backend response status:", response.status);
+      console.log(
+        "Backend response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('Backend error response:', errorText);
+        console.log("Backend error response:", errorText);
       } else {
         const data = await response.json();
-        console.log('Backend success response:', data);
+        console.log("Backend success response:", data);
       }
     } catch (err) {
-      console.error('Backend connection failed:', err);
+      console.error("Backend connection failed:", err);
     }
   };
 
@@ -119,90 +144,97 @@ const InternDailyRecords = () => {
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    
+
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(day);
     }
-    
+
     return days;
   };
 
   const formatDateKey = (date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
   };
 
   const formatDateForAPI = (date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
   const handleDateClick = async (day) => {
     if (!day) return;
-    
-    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+
+    const clickedDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
     setSelectedDate(clickedDate);
-    
+
     try {
       const dateStr = formatDateForAPI(clickedDate);
       const existingRecord = await workRecordAPI.getWorkRecordByDate(dateStr);
-      
+
       if (existingRecord) {
         setCurrentRecord({
           ...existingRecord,
           department: existingRecord.department,
           status: existingRecord.status,
-          hoursWorked: existingRecord.hoursWorked.toString()
+          hoursWorked: existingRecord.hoursWorked.toString(),
         });
       } else {
         setCurrentRecord({
-          tasks: '',
-          hoursWorked: '',
-          department: 'GENERAL',
-          supervisor: '',
-          achievements: '',
-          challenges: '',
-          learnings: '',
-          status: 'COMPLETED'
+          tasks: "",
+          hoursWorked: "",
+          department: "GENERAL",
+          supervisor: "",
+          achievements: "",
+          challenges: "",
+          learnings: "",
+          status: "COMPLETED",
         });
       }
     } catch (err) {
       // Record doesn't exist (404) or other error, reset form
       if (err.response?.status !== 404) {
-        console.error('Error fetching work record:', err);
+        console.error("Error fetching work record:", err);
       }
       setCurrentRecord({
-        tasks: '',
-        hoursWorked: '',
-        department: 'GENERAL',
-        supervisor: '',
-        achievements: '',
-        challenges: '',
-        learnings: '',
-        status: 'COMPLETED'
+        tasks: "",
+        hoursWorked: "",
+        department: "GENERAL",
+        supervisor: "",
+        achievements: "",
+        challenges: "",
+        learnings: "",
+        status: "COMPLETED",
       });
     }
-    
-    setCurrentView('add');
+
+    setCurrentView("add");
   };
 
   const handleSaveRecord = async () => {
     if (!currentRecord.tasks.trim() || !currentRecord.hoursWorked) return;
-    
+
     // Comprehensive debug logging
-    console.log('🚀 Starting work record save operation...');
+    console.log("🚀 Starting work record save operation...");
     debugToken(); // Log token details
-    console.log('👤 Current user role:', getRole());
-    console.log('🆔 Current user ID:', getUserId());
-    
+    console.log("👤 Current user role:", getRole());
+    console.log("🆔 Current user ID:", getUserId());
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const workRecordData = {
         workDate: formatDateForAPI(selectedDate),
@@ -213,71 +245,78 @@ const InternDailyRecords = () => {
         achievements: currentRecord.achievements || null,
         challenges: currentRecord.challenges || null,
         learnings: currentRecord.learnings || null,
-        status: currentRecord.status
+        status: currentRecord.status,
       };
 
-      console.log('💾 Saving work record data:', workRecordData);
+      console.log("💾 Saving work record data:", workRecordData);
 
       // Check if updating existing record
       const dateKey = formatDateForAPI(selectedDate); // Use API format
       const existingRecord = workRecords[dateKey];
-      
+
       if (existingRecord && existingRecord.workRecordId) {
         // Update existing record
-        console.log('✏️ Updating existing record ID:', existingRecord.workRecordId);
-        await workRecordAPI.updateWorkRecord(existingRecord.workRecordId, workRecordData);
-        console.log('✅ Update successful');
+        console.log(
+          "✏️ Updating existing record ID:",
+          existingRecord.workRecordId
+        );
+        await workRecordAPI.updateWorkRecord(
+          existingRecord.workRecordId,
+          workRecordData
+        );
+        console.log("✅ Update successful");
       } else {
         // Create new record
-        console.log('➕ Creating new record');
+        console.log("➕ Creating new record");
         const response = await workRecordAPI.createWorkRecord(workRecordData);
-        console.log('✅ Creation successful:', response);
+        console.log("✅ Creation successful:", response);
       }
-      
+
       // Refresh data
       await loadWorkRecords();
       await loadStats();
-      
+
       // Switch to calendar view after saving
-      setCurrentView('calendar');
-      
+      setCurrentView("calendar");
+
       // Reset form for next entry
       setCurrentRecord({
-        tasks: '',
-        hoursWorked: '',
-        department: 'GENERAL',
-        supervisor: '',
-        achievements: '',
-        challenges: '',
-        learnings: '',
-        status: 'COMPLETED'
+        tasks: "",
+        hoursWorked: "",
+        department: "GENERAL",
+        supervisor: "",
+        achievements: "",
+        challenges: "",
+        learnings: "",
+        status: "COMPLETED",
       });
-      
+
       // Set selected date to tomorrow for next entry
       const tomorrow = new Date(selectedDate);
       tomorrow.setDate(tomorrow.getDate() + 1);
       setSelectedDate(tomorrow);
-      
     } catch (err) {
-      console.error('Full error details:', err);
-      console.error('Error response:', err.response);
-      console.error('Error response data:', err.response?.data);
-      
+      console.error("Full error details:", err);
+      console.error("Error response:", err.response);
+      console.error("Error response data:", err.response?.data);
+
       // More detailed error message
-      let errorMessage = 'Failed to save work record';
+      let errorMessage = "Failed to save work record";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.response?.data?.validationErrors) {
-        const validationErrors = Object.values(err.response.data.validationErrors).join(', ');
+        const validationErrors = Object.values(
+          err.response.data.validationErrors
+        ).join(", ");
         errorMessage = `Validation errors: ${validationErrors}`;
       } else if (err.response?.status === 403) {
-        errorMessage = 'Access denied. Please check your permissions.';
+        errorMessage = "Access denied. Please check your permissions.";
       } else if (err.response?.status === 401) {
-        errorMessage = 'Authentication failed. Please log in again.';
+        errorMessage = "Authentication failed. Please log in again.";
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -286,20 +325,28 @@ const InternDailyRecords = () => {
 
   const hasRecord = (day) => {
     if (!day) return false;
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
     const dateKey = formatDateForAPI(date); // Use API format
     return workRecords[dateKey];
   };
 
   const getRecordPreview = (day) => {
     if (!day) return null;
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const date = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
     const dateKey = formatDateForAPI(date); // Use API format
     return workRecords[dateKey];
   };
 
   const navigateMonth = (direction) => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev);
       newDate.setMonth(prev.getMonth() + direction);
       return newDate;
@@ -307,12 +354,12 @@ const InternDailyRecords = () => {
   };
 
   const getStatusColor = (status) => {
-    const normalizedStatus = status?.toLowerCase().replace('_', '-');
+    const normalizedStatus = status?.toLowerCase().replace("_", "-");
     const colors = {
-      completed: 'bg-green-200 text-green-800',
-      'in-progress': 'bg-[#BFDBFE] text-blue-800',
-      pending: 'bg-yellow-200 text-yellow-800',
-      'on-hold': 'bg-red-200 text-red-800'
+      completed: "bg-green-200 text-green-800",
+      "in-progress": "bg-[#BFDBFE] text-blue-800",
+      pending: "bg-yellow-200 text-yellow-800",
+      "on-hold": "bg-red-200 text-red-800",
     };
     return colors[normalizedStatus] || colors.completed;
   };
@@ -320,14 +367,14 @@ const InternDailyRecords = () => {
   const getDepartmentColor = (department) => {
     const normalizedDept = department?.toLowerCase();
     const colors = {
-      marketing: 'bg-purple-100 border-purple-300',
-      engineering: 'bg-[#DBEAFE] border-blue-300',
-      hr: 'bg-green-100 border-green-300',
-      finance: 'bg-yellow-100 border-yellow-300',
-      operations: 'bg-orange-100 border-orange-300',
-      design: 'bg-pink-100 border-pink-300',
-      sales: 'bg-red-100 border-red-300',
-      general: 'bg-[#F3F4F6] border-[#D1D5DB]'
+      marketing: "bg-purple-100 border-purple-300",
+      engineering: "bg-[#DBEAFE] border-blue-300",
+      hr: "bg-green-100 border-green-300",
+      finance: "bg-yellow-100 border-yellow-300",
+      operations: "bg-orange-100 border-orange-300",
+      design: "bg-pink-100 border-pink-300",
+      sales: "bg-red-100 border-red-300",
+      general: "bg-[#F3F4F6] border-[#D1D5DB]",
     };
     return colors[normalizedDept] || colors.general;
   };
@@ -345,11 +392,21 @@ const InternDailyRecords = () => {
   };
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // Add Record View
   const renderAddRecordView = () => (
@@ -357,7 +414,7 @@ const InternDailyRecords = () => {
       {error && (
         <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
           {error}
-          <button 
+          <button
             onClick={() => setError(null)}
             className="ml-2 text-red-500 hover:text-red-700"
           >
@@ -365,7 +422,7 @@ const InternDailyRecords = () => {
           </button>
         </div>
       )}
-      
+
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold text-[#4db849] flex items-center gap-2">
@@ -374,7 +431,7 @@ const InternDailyRecords = () => {
           </h1>
           {Object.keys(workRecords).length > 0 && (
             <button
-              onClick={() => setCurrentView('calendar')}
+              onClick={() => setCurrentView("calendar")}
               className="flex items-center gap-2 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors"
             >
               <Calendar size={16} />
@@ -382,29 +439,41 @@ const InternDailyRecords = () => {
             </button>
           )}
         </div>
-        
+
         {/* Stats Bar */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Clock className="text-[#2563EB]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">Total Hours</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                Total Hours
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{getTotalHours().toFixed(1)}</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {getTotalHours().toFixed(1)}
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Target className="text-[#16A34A]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">This Month</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                This Month
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{getMonthlyHours().toFixed(1)} hrs</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {getMonthlyHours().toFixed(1)} hrs
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <FileText className="text-[#7C3AED]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">Work Days</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                Work Days
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{Object.keys(workRecords).length}</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {Object.keys(workRecords).length}
+            </p>
           </div>
         </div>
       </div>
@@ -424,7 +493,7 @@ const InternDailyRecords = () => {
             </button>
             <input
               type="date"
-              value={selectedDate.toISOString().split('T')[0]}
+              value={selectedDate.toISOString().split("T")[0]}
               onChange={(e) => setSelectedDate(new Date(e.target.value))}
               className="text-sm px-3 py-1 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent"
             />
@@ -442,7 +511,12 @@ const InternDailyRecords = () => {
               min="0"
               max="24"
               value={currentRecord.hoursWorked}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, hoursWorked: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  hoursWorked: e.target.value,
+                }))
+              }
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg"
               placeholder="8.0"
             />
@@ -454,10 +528,15 @@ const InternDailyRecords = () => {
             </label>
             <select
               value={currentRecord.department}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, department: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  department: e.target.value,
+                }))
+              }
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg"
             >
-              {departments.map(dept => (
+              {departments.map((dept) => (
                 <option key={dept} value={dept}>
                   {dept.charAt(0) + dept.slice(1).toLowerCase()}
                 </option>
@@ -472,7 +551,12 @@ const InternDailyRecords = () => {
             <input
               type="text"
               value={currentRecord.supervisor}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, supervisor: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  supervisor: e.target.value,
+                }))
+              }
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg"
               placeholder="Enter supervisor name"
             />
@@ -484,12 +568,18 @@ const InternDailyRecords = () => {
             </label>
             <select
               value={currentRecord.status}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  status: e.target.value,
+                }))
+              }
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg"
             >
-              {statusOptions.map(status => (
+              {statusOptions.map((status) => (
                 <option key={status} value={status}>
-                  {status.charAt(0) + status.slice(1).toLowerCase().replace('_', ' ')}
+                  {status.charAt(0) +
+                    status.slice(1).toLowerCase().replace("_", " ")}
                 </option>
               ))}
             </select>
@@ -503,7 +593,9 @@ const InternDailyRecords = () => {
             </label>
             <textarea
               value={currentRecord.tasks}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, tasks: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({ ...prev, tasks: e.target.value }))
+              }
               rows="4"
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg resize-none"
               placeholder="Describe the tasks you worked on today..."
@@ -516,7 +608,12 @@ const InternDailyRecords = () => {
             </label>
             <textarea
               value={currentRecord.achievements}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, achievements: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  achievements: e.target.value,
+                }))
+              }
               rows="3"
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg resize-none"
               placeholder="What did you accomplish today?"
@@ -529,7 +626,12 @@ const InternDailyRecords = () => {
             </label>
             <textarea
               value={currentRecord.challenges}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, challenges: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  challenges: e.target.value,
+                }))
+              }
               rows="3"
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg resize-none"
               placeholder="Any obstacles or difficulties encountered?"
@@ -542,7 +644,12 @@ const InternDailyRecords = () => {
             </label>
             <textarea
               value={currentRecord.learnings}
-              onChange={(e) => setCurrentRecord(prev => ({ ...prev, learnings: e.target.value }))}
+              onChange={(e) =>
+                setCurrentRecord((prev) => ({
+                  ...prev,
+                  learnings: e.target.value,
+                }))
+              }
               rows="3"
               className="w-full px-4 py-3 border border-[#D1D5DB] rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent text-lg resize-none"
               placeholder="What new skills or knowledge did you gain?"
@@ -553,7 +660,11 @@ const InternDailyRecords = () => {
         <div className="mt-8">
           <button
             onClick={handleSaveRecord}
-            disabled={!currentRecord.tasks.trim() || !currentRecord.hoursWorked || loading}
+            disabled={
+              !currentRecord.tasks.trim() ||
+              !currentRecord.hoursWorked ||
+              loading
+            }
             className="w-full bg-[#2563EB] text-white py-4 px-6 rounded-lg hover:bg-[#1D4ED8] disabled:bg-[#9CA3AF] disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-lg font-medium"
           >
             {loading ? (
@@ -579,7 +690,7 @@ const InternDailyRecords = () => {
       {error && (
         <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
           {error}
-          <button 
+          <button
             onClick={() => setError(null)}
             className="ml-2 text-red-500 hover:text-red-700"
           >
@@ -587,7 +698,7 @@ const InternDailyRecords = () => {
           </button>
         </div>
       )}
-      
+
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-3xl font-bold text-[#1F2937] flex items-center gap-2">
@@ -595,36 +706,48 @@ const InternDailyRecords = () => {
             Work Records Calendar
           </h1>
           <button
-            onClick={() => setCurrentView('add')}
+            onClick={() => setCurrentView("add")}
             className="flex items-center gap-2 px-4 py-2 bg-[#16A34A] text-white rounded-lg hover:bg-[#15803D] transition-colors"
           >
             <Plus size={16} />
             Add New Record
           </button>
         </div>
-        
+
         {/* Stats Bar */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Clock className="text-[#2563EB]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">Total Hours</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                Total Hours
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{getTotalHours().toFixed(1)}</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {getTotalHours().toFixed(1)}
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <Target className="text-[#16A34A]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">This Month</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                This Month
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{getMonthlyHours().toFixed(1)} hrs</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {getMonthlyHours().toFixed(1)} hrs
+            </p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow border border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <FileText className="text-[#7C3AED]" size={20} />
-              <span className="text-sm font-medium text-[#4B5563]">Work Days</span>
+              <span className="text-sm font-medium text-[#4B5563]">
+                Work Days
+              </span>
             </div>
-            <p className="text-2xl font-bold text-[#1F2937]">{getTotalWorkDays()}</p>
+            <p className="text-2xl font-bold text-[#1F2937]">
+              {getTotalWorkDays()}
+            </p>
           </div>
         </div>
       </div>
@@ -639,11 +762,11 @@ const InternDailyRecords = () => {
             >
               <ChevronLeft size={20} />
             </button>
-            
+
             <h2 className="text-xl font-semibold">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
-            
+
             <button
               onClick={() => navigateMonth(1)}
               className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -656,8 +779,11 @@ const InternDailyRecords = () => {
         <div className="p-4">
           {/* Day Headers */}
           <div className="grid grid-cols-7 gap-2 mb-2">
-            {dayNames.map(day => (
-              <div key={day} className="text-center font-semibold text-[#4B5563] py-2">
+            {dayNames.map((day) => (
+              <div
+                key={day}
+                className="text-center font-semibold text-[#4B5563] py-2"
+              >
                 {day}
               </div>
             ))}
@@ -673,22 +799,33 @@ const InternDailyRecords = () => {
                   onClick={() => handleDateClick(day)}
                   className={`
                     h-28 border rounded-lg cursor-pointer transition-all duration-200 relative
-                    ${day ? 'hover:shadow-md hover:scale-105' : 'cursor-default'}
-                    ${hasRecord(day) 
-                      ? `${getDepartmentColor(record?.department)} border-2` 
-                      : 'bg-gray-50 border-[#E5E7EB] hover:bg-[#F3F4F6]'
+                    ${
+                      day ? "hover:shadow-md hover:scale-105" : "cursor-default"
+                    }
+                    ${
+                      hasRecord(day)
+                        ? `${getDepartmentColor(record?.department)} border-2`
+                        : "bg-gray-50 border-[#E5E7EB] hover:bg-[#F3F4F6]"
                     }
                   `}
                 >
                   {day && (
                     <>
                       <div className="p-2">
-                        <span className={`text-sm font-medium ${hasRecord(day) ? 'text-[#1F2937]' : 'text-[#4B5563]'}`}>
+                        <span
+                          className={`text-sm font-medium ${
+                            hasRecord(day) ? "text-[#1F2937]" : "text-[#4B5563]"
+                          }`}
+                        >
                           {day}
                         </span>
                         {hasRecord(day) && (
                           <div className="mt-1 space-y-1">
-                            <div className={`text-xs px-2 py-1 rounded-full inline-block ${getStatusColor(record.status)}`}>
+                            <div
+                              className={`text-xs px-2 py-1 rounded-full inline-block ${getStatusColor(
+                                record.status
+                              )}`}
+                            >
                               {record.status}
                             </div>
                             <div className="text-xs text-[#4B5563] font-medium">
@@ -721,7 +858,7 @@ const InternDailyRecords = () => {
           <div className="text-center py-8">
             <p className="text-[#4B5563] mb-4">No work records yet.</p>
             <button
-              onClick={() => setCurrentView('add')}
+              onClick={() => setCurrentView("add")}
               className="px-6 py-3 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] transition-colors"
             >
               Add Your First Record
@@ -733,18 +870,30 @@ const InternDailyRecords = () => {
               .sort(([a], [b]) => new Date(b) - new Date(a))
               .slice(0, 5)
               .map(([dateKey, record]) => (
-                <div key={dateKey} className={`p-4 rounded-lg border-2 ${getDepartmentColor(record.department)}`}>
+                <div
+                  key={dateKey}
+                  className={`p-4 rounded-lg border-2 ${getDepartmentColor(
+                    record.department
+                  )}`}
+                >
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h4 className="font-medium text-[#1F2937]">
-                        {new Date(record.workDate).toLocaleDateString()} - {record.department.toUpperCase()}
+                        {new Date(record.workDate).toLocaleDateString()} -{" "}
+                        {record.department.toUpperCase()}
                       </h4>
                       <p className="text-sm text-[#4B5563]">
-                        {record.hoursWorked} hours • {record.supervisor && `Supervisor: ${record.supervisor}`}
+                        {record.hoursWorked} hours •{" "}
+                        {record.supervisor &&
+                          `Supervisor: ${record.supervisor}`}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(record.status)}`}>
-                      {record.status.replace('-', ' ')}
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
+                        record.status
+                      )}`}
+                    >
+                      {record.status.replace("-", " ")}
                     </span>
                   </div>
                   <p className="text-sm text-[#374151] mb-2">
@@ -775,12 +924,13 @@ const InternDailyRecords = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563EB]"></div>
         </div>
       )}
-      {!loading || Object.keys(workRecords).length > 0 ? (
-        currentView === 'add' ? renderAddRecordView() : renderCalendarView()
-      ) : null}
+      {!loading || Object.keys(workRecords).length > 0
+        ? currentView === "add"
+          ? renderAddRecordView()
+          : renderCalendarView()
+        : null}
     </div>
   );
 };
 
 export default InternDailyRecords;
-
