@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Save, Calendar, Briefcase, Clock, Targ
 import { workRecordAPI } from '../../services/workRecordAPI';
 import { isTokenExpired, getUserId, getRole } from '../../utils/Auth';
 import { debugToken } from '../../utils/tokenDebug';
+import API_BASE_URL from "../../config/api";
 
 const InternDailyRecords = () => {
   const [currentView, setCurrentView] = useState('add');
@@ -87,7 +88,7 @@ const InternDailyRecords = () => {
   const testBackendConnection = async () => {
     try {
       console.log('Testing backend connection...');
-      const response = await fetch('http://localhost:8080/api/work-records', {
+      const response = await fetch(`${API_BASE_URL}/api/work-records`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

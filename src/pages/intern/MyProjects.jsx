@@ -11,6 +11,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import API_BASE_URL from "../../config/api";
 
 const MyProjects = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const MyProjects = () => {
     const decodedToken = jwtDecode(token);
 
     axios
-      .get(`http://localhost:8080/intern/getIntern/${decodedToken.user_id}`, {
+      .get(`${API_BASE_URL}/intern/getIntern/${decodedToken.user_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
